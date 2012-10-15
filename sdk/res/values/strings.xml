@@ -1,0 +1,13 @@
+<resources>
+
+    <string name="app_name">FriendlyMusic</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="home_headimage">Head image of home screen</string>
+    <string name="home_moodimage">MoodMap logo image of home screen</string>
+    <string name="home_occasionimage">Occasion logo image of home screen</string>
+    <string name="home_editorspickimage">Editors pick logo image of home screen</string>
+    <string name="home_separatorimage">Separator line image of home screen</string>
+
+</resources>

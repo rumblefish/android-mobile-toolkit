@@ -1,0 +1,97 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/home_background"
+    android:orientation="vertical" >
+
+    <ImageView
+        android:id="@+id/ivHomeHeader"
+        android:layout_width="fill_parent"
+        android:layout_height="160dp"
+        android:contentDescription="@string/home_headimage"
+        android:scaleType="fitXY"
+        android:src="@drawable/homeheader" />
+
+    <RelativeLayout
+        android:id = "@+id/rlMoodMap"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" 
+        >
+
+        <ImageView
+            android:id="@+id/ivMoodMap"
+            android:layout_width="fill_parent"
+            android:layout_height="160dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="40dip"
+            android:scaleType="centerInside"
+            android:src="@drawable/moodmap_logo"
+            android:contentDescription="@string/home_moodimage" />
+
+        <ImageView
+            android:id="@+id/ivSeparator1"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/separator_horizontal"
+            android:contentDescription="@string/home_separatorimage"  />
+        
+    </RelativeLayout>
+    
+    <RelativeLayout
+        android:id = "@+id/rlOccasion"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" >
+        
+        <ImageView
+            android:id="@+id/ivOccasion"
+            android:layout_width="fill_parent"
+            android:layout_height="160dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="40dip"
+            android:scaleType="centerInside"
+            android:src="@drawable/occasion_logo"
+            android:contentDescription="@string/home_occasionimage"  />
+        
+        <ImageView
+            android:id="@+id/ivSeparator2"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/separator_horizontal"
+            android:contentDescription="@string/home_separatorimage"  />
+    </RelativeLayout>
+    
+    <RelativeLayout
+        android:id = "@+id/rlEditorsPick"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" >
+        
+        <ImageView
+            android:id="@+id/ivEditorsPick"
+            android:layout_width="fill_parent"
+            android:layout_height="160dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="40dip"
+            android:scaleType="centerInside"
+            android:src="@drawable/editorspick_logo"
+            android:contentDescription="@string/home_editorspickimage" />
+
+        <ImageView
+            android:id="@+id/ivSeparator3"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/separator_horizontal"
+            android:contentDescription="@string/home_separatorimage" />
+    </RelativeLayout>
+</LinearLayout>
