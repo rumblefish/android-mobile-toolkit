@@ -2,21 +2,22 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:background="@color/moodmap_background">
+        android:background="@color/moodmap_background"
+        android:orientation="horizontal" >
         
         <RelativeLayout
             android:id="@+id/rlMoodMap"
             android:layout_width="match_parent"
-            android:layout_height="480dp">
+            android:layout_height="match_parent">
             
 			<ImageView
                 android:id="@+id/ivBgSurround"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_bg_surround" />
+                android:src="@drawable/moodmap_bg_surround"
+                android:contentDescription="@string/moodmap_image" />
 			
             <ImageView
                 android:id="@+id/ivBtnDone"
@@ -24,9 +25,9 @@
                 android:layout_height="160dp"
                 android:layout_margin="2dp"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                
-                android:src="@drawable/moodmap_btn_done" />
+                android:layout_alignParentTop="true"                
+                android:src="@drawable/moodmap_btn_done" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivBtnFilters"
@@ -35,7 +36,8 @@
                 android:layout_margin="2dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentLeft="true"
-                android:src="@drawable/moodmap_btn_filters_off" />
+                android:src="@drawable/moodmap_btn_filters_off" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivBtnPlaylist"
@@ -44,7 +46,8 @@
                 android:layout_margin="2dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
-                android:src="@drawable/moodmap_btn_playlist_off" />
+                android:src="@drawable/moodmap_btn_playlist_off" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivLogo"
@@ -53,7 +56,8 @@
                 android:layout_margin="8dp"
                 android:layout_alignRight="@+id/ivBtnPlaylist"
                 android:layout_alignTop="@+id/ivBtnDone"
-                android:src="@drawable/moodmap_onscreen_logo" />
+                android:src="@drawable/moodmap_onscreen_logo" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivMoodMap"
@@ -61,7 +65,8 @@
                 android:layout_height="363dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap" />
+                android:src="@drawable/moodmap" 
+                android:contentDescription="@string/moodmap_image" />
             
             <ImageView
                 android:id="@+id/ivIcons"
@@ -69,7 +74,8 @@
                 android:layout_height="453dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_icons" />
+                android:src="@drawable/moodmap_icons" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivRing"
@@ -77,7 +83,8 @@
                 android:layout_height="407dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_ring" />
+                android:src="@drawable/moodmap_ring" 
+                android:contentDescription="@string/moodmap_image" />
             
             <ImageView
                 android:id="@+id/ivGlow"
@@ -85,7 +92,8 @@
                 android:layout_height="407dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_glow" />
+                android:src="@drawable/moodmap_glow" 
+                android:contentDescription="@string/moodmap_image" />
 
             <ImageView
                 android:id="@+id/ivCrosshairs"
@@ -93,15 +101,8 @@
                 android:layout_height="407dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_crosshairs" />
-
-            <ImageView
-                android:id="@+id/ivSelector"
-                android:layout_width="68dp"
-                android:layout_height="68dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_selector" />
+                android:src="@drawable/moodmap_crosshairs"
+                android:contentDescription="@string/moodmap_image"  />
 
             <ImageView
                 android:id="@+id/ivMessage"
@@ -109,14 +110,37 @@
                 android:layout_height="84dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/moodmap_start_message" />
+                android:src="@drawable/moodmap_start_message" 
+                android:contentDescription="@string/moodmap_image" />
+
+            <ImageView
+                android:id="@+id/ivSelector"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:layout_alignLeft="@+id/ivMoodMap"
+                android:layout_alignTop="@+id/ivMoodMap"
+                android:contentDescription="@string/moodmap_image"
+                android:src="@drawable/moodmap_selector" />
             
         </RelativeLayout>
 
-        <ListView
-            android:id="@+id/lvSongs"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-        </ListView>
+            
+            <ListView
+	            android:id="@+id/lvSongs"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent" >
+	        </ListView>
+	        
+             <ProgressBar
+                android:id="@+id/pbActivityIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true" />
+             
+        </RelativeLayout>
 
     </LinearLayout>

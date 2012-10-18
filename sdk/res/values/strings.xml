@@ -9,5 +9,7 @@
     <string name="home_occasionimage">Occasion logo image of home screen</string>
     <string name="home_editorspickimage">Editors pick logo image of home screen</string>
     <string name="home_separatorimage">Separator line image of home screen</string>
-
+	
+    <string name="moodmap_image">Image of moodmap screen</string>
+    <string name="moodmap_listimage">Images of song list in mood map screen</string>
 </resources>

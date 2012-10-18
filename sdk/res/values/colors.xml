@@ -4,5 +4,6 @@
     
 	<color name="home_background">#1e1d1c</color>
     <color name="moodmap_background">#3B3937</color>
+    <color name="moodmap_listbackground">#202020</color>
     
 </resources>
