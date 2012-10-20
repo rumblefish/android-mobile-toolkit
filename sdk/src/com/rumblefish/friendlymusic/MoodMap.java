@@ -2,7 +2,17 @@ package com.rumblefish.friendlymusic;
 
 import java.util.ArrayList;
 
+import com.rumblefish.friendlymusic.api.LocalPlaylist;
+import com.rumblefish.friendlymusic.api.Media;
+import com.rumblefish.friendlymusic.api.Playlist;
+import com.rumblefish.friendlymusic.api.Producer;
+import com.rumblefish.friendlymusic.api.ProducerDelegate;
+import com.rumblefish.friendlymusic.api.RFAPI;
+import com.rumblefish.friendlymusic.api.RFAPI.RFAPIEnv;
+import com.rumblefish.friendlymusic.api.StaticResources;
+
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,12 +20,20 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.RectF;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnBufferingUpdateListener;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewTreeObserver;
@@ -23,15 +41,25 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class MoodMap extends Activity implements OnTouchListener{
 
 	public static final String LOGTAG = "MoodMap";
+	
+	public enum ItemStatus
+	{
+		NORMAL,
+		DOWNLOADING,
+		PLAYING
+	}
 	
 	RelativeLayout 	m_rlMoodMap;
 	ImageView	m_ivSurround;
@@ -49,16 +77,23 @@ public class MoodMap extends Activity implements OnTouchListener{
 	
 	ListView		m_lvSongs;
 	ProgressBar		m_pbActivityIndicator;
+	MediaArrayAdapter m_lvSongsAdapter = null;
 	
 	int m_rlMoodMapSize;
 	int m_screenOrientation;
 	
 	ArrayList<Integer> m_adjacentColors;
-	int	m_playingRow;
-	Integer m_selectedColor;
-	boolean m_isPlaying;
+	int	m_playingRow = -1;
+	boolean m_isPlaying = false;
 	boolean m_playlistIsLoading;
-	int	m_playlistID;
+	int	m_playlistID = -1;
+	int m_selectedCellID = -1;
+	Integer m_selectedColor;
+	Point m_crosshairPos;
+	
+	MediaPlayer m_mediaPlayer = null;
+	
+	Playlist m_playlist;
 	
 	int[][] idArray = 
 		{
@@ -91,19 +126,33 @@ public class MoodMap extends Activity implements OnTouchListener{
         
         initView();
         
+        //configures rumble environment
+        RFAPI.rumbleWithEnvironment(RFAPIEnv.RFAPIEnvProduction, "PUBLIC_KEY", "PASSWORD");
+        LocalPlaylist.initPlaylist(this);
+        LocalPlaylist.sharedPlaylist().readPlaylist();
+        
+        
         //init variables
         m_adjacentColors = new ArrayList<Integer>();
         m_ivGlow.setVisibility(View.INVISIBLE);
         m_ivRing.setVisibility(View.INVISIBLE);
-        m_ivSelector.setVisibility(View.INVISIBLE);
+        
+        if(StaticResources.m_crosshairPos != null)
+        {
+        	setMoodMapElemPos(m_ivSelector, StaticResources.m_crosshairPos.x, StaticResources.m_crosshairPos.y);
+        	m_crosshairPos = StaticResources.m_crosshairPos;
+        }
+        else
+        {
+        	m_ivSelector.setVisibility(View.INVISIBLE);
+        }
         
         m_playingRow = -1;
         
         //copying playlist.plist to document folder
         //
         //
-        
-        m_selectedColor = 0;
+        m_selectedColor = StaticResources.m_selectedColor;
         if(SettingsUtils.getBoolForKey(this, "fmisused", false) == true)
         {
         	m_ivMessage.setVisibility(View.INVISIBLE);
@@ -124,6 +173,24 @@ public class MoodMap extends Activity implements OnTouchListener{
         m_animFadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
         m_animFadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
         
+        //media player
+        if(StaticResources.m_mediaPlayer != null)
+        	m_mediaPlayer = StaticResources.m_mediaPlayer;
+        else
+        	m_mediaPlayer = new MediaPlayer();
+        
+        m_mediaPlayer.setOnCompletionListener(m_mpCompletionListener);
+        m_mediaPlayer.setOnBufferingUpdateListener(m_mpBufferingUpdateListener);
+        m_mediaPlayer.setOnErrorListener(m_mpErrorListener);
+        
+        if(StaticResources.m_playlist != null)
+        {
+        	this.m_selectedCellID = StaticResources.m_selectedCellID;
+        	m_isPlaying = StaticResources.m_isPlaying;
+        	updatePlaylist(StaticResources.m_playlist);
+        }
+        
+        updatePlaylistBtn();
     }
     
     @Override
@@ -196,20 +263,24 @@ public class MoodMap extends Activity implements OnTouchListener{
             	setMoodMapElemSize(m_ivBtnFilters,  	(int)(160 * ratioTo480),  (int)(160 * ratioTo480));
             	setMoodMapElemSize(m_ivBtnPlaylist,  	(int)(160 * ratioTo480),  (int)(160 * ratioTo480));
             	
-            	setMoodMapElemSize(m_ivLogo,  		(int)(155 * ratioTo480),  (int)(45 * ratioTo480));
+            	setMoodMapElemSize(m_ivLogo,  			(int)(155 * ratioTo480),  (int)(45 * ratioTo480));
             	setMoodMapElemSize(m_ivMoodMap,  		(int)(363 * ratioTo480),  (int)(363 * ratioTo480));
-            	setMoodMapElemSize(m_ivIcons,  		(int)(453 * ratioTo480),  (int)(453 * ratioTo480));
-            	setMoodMapElemSize(m_ivRing,  		(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
-            	setMoodMapElemSize(m_ivGlow,  		(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
+            	setMoodMapElemSize(m_ivIcons,  			(int)(453 * ratioTo480),  (int)(453 * ratioTo480));
+            	setMoodMapElemSize(m_ivRing,  			(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
+            	setMoodMapElemSize(m_ivGlow,  			(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
             	setMoodMapElemSize(m_ivCrosshairs,  	(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
-            	setMoodMapElemSize(m_ivSelector,  	(int)(68 * ratioTo480),  (int)(68 * ratioTo480));
+            	setMoodMapElemSize(m_ivSelector,  		(int)(68 * ratioTo480),  (int)(68 * ratioTo480));
             	setMoodMapElemSize(m_ivMessage,  		(int)(292 * ratioTo480),  (int)(84 * ratioTo480));
             }
         });
         
         //event handler
         m_ivMoodMap.setOnTouchListener(this);
-
+        
+        m_ivBtnDone.setOnClickListener(m_onClickListener);
+        m_ivBtnFilters.setOnClickListener(m_onClickListener);
+        m_ivBtnPlaylist.setOnClickListener(m_onClickListener);
+        
     }
 
     Bitmap m_ringBitmap = null;
@@ -253,6 +324,473 @@ public class MoodMap extends Activity implements OnTouchListener{
     	canvas.drawOval(new RectF( marginInX, marginInY, m_ringBitmap.getWidth() - marginInX, m_ringBitmap.getHeight() - marginInY ), paint);*/
     	
     	imgView.setImageBitmap(m_ringBitmap);
+    }
+    
+    
+    
+    @Override
+	public boolean onTouch(View view, MotionEvent event) {
+
+    	if(view == m_ivMoodMap)
+    	{
+    		float ratioTo320 = (float)m_rlMoodMapSize / 320;
+    		float curX = event.getX();
+    		float ratX = curX / ratioTo320;
+    		float curY = event.getY();
+    		float ratY = curY / ratioTo320;
+    		
+    		//Log.i(LOGTAG, " curX = " + curX + " curY = " + curY);
+    		
+			switch(event.getAction() & MotionEvent.ACTION_MASK)
+			{
+			case MotionEvent.ACTION_DOWN:
+				float d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
+			    if( d <= 121.0f)
+			    {
+			    	m_ivMessage.setVisibility(View.INVISIBLE);
+			    	m_ivSelector.setVisibility(View.VISIBLE);
+			    	setMoodMapElemPos(m_ivSelector, (int)curX, (int)curY);
+			    	
+			    	
+			    	m_ivRing.setVisibility(View.VISIBLE);
+			    	m_ivRing.startAnimation(m_animFadeIn);
+			    	
+			    	//m_ivGlow.setVisibility(View.VISIBLE);
+			    	//m_ivGlow.startAnimation(m_animFadeIn);
+			    	
+			    	colorOfPoint(ratX, ratY);
+			    	ringImageByFillingColor(m_selectedColor);
+			    	
+			    }
+				break;
+			case MotionEvent.ACTION_MOVE:
+				d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
+			    if( d <= 121.0f)
+			    {
+			    	setMoodMapElemPos(m_ivSelector, (int)curX, (int)curY);
+			    	colorOfPoint(ratX, ratY);
+			    	ringImageByFillingColor(m_selectedColor);
+			    }
+				break;
+			case MotionEvent.ACTION_UP:
+				if(m_crosshairPos == null)
+					m_crosshairPos = new Point();
+				m_crosshairPos.x = (int)curX;
+				m_crosshairPos.y = (int)curY;
+				m_ivRing.setVisibility(View.INVISIBLE);
+		    	m_ivRing.startAnimation(m_animFadeOut);
+		    	//m_ivGlow.startAnimation(m_animFadeIn);
+		    	d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
+			    if( d <= 121.0f)
+			    {
+			    	// get the ID
+			        int x = (int)(ratX/20.166);
+			        int y = (int)(ratY/20.166);
+			        m_playlistID = idArray[y][x];
+			        m_playingRow = -1;
+			        getPlaylistFromServer();
+			    }
+				break;
+			}
+    	}
+		return true;
+    	
+	}
+    
+    private void updatePlaylistBtn()
+    {
+    	if(LocalPlaylist.sharedPlaylist().m_playlist.size() == 0)
+    	{
+    		m_ivBtnPlaylist.setSelected(false);
+    	}
+    	else
+    	{
+    		m_ivBtnPlaylist.setSelected(true);
+    	}
+    }
+    private void updatePlaylist(Playlist playlist)
+    {
+    	if(m_lvSongsAdapter != null)
+    	{
+    		m_lvSongsAdapter.clear();
+    		m_lvSongsAdapter = null;
+    	}
+    	
+    	m_playlist = playlist;
+    	//this.m_lvSongs.re
+    	if(m_playlist != null && m_playlist.m_media != null && m_playlist.m_media.size() > 0)
+    	{
+    		m_lvSongsAdapter = new MediaArrayAdapter(this, R.layout.play_list_item, m_playlist.m_media);
+	        m_lvSongs.setAdapter(m_lvSongsAdapter);
+	        m_lvSongs.setOnItemClickListener(m_onItemClickListener);
+    	}
+    }
+    
+    private void getPlaylistFromServer()
+    {
+    	RFAPI api = RFAPI.getSingleTone();
+    	Producer getMedia = api.getPlaylist(m_playlistID + 187);
+    	if(getMedia == null)
+    		return;
+    	
+    	m_isPlaying = false;
+    	if(m_mediaPlayer != null)
+    	{
+    		m_mediaPlayer.reset();
+    	}
+    	m_pbActivityIndicator.setVisibility(View.VISIBLE);
+    	m_ivBtnDone.setEnabled(false);
+    	
+    	getMedia.m_delegate = new ProducerDelegate()
+    	{
+			@Override
+			public void onResult(Object obj) {
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				updatePlaylist((Playlist) obj);
+				
+//				if(m_playlist.m_media.size() > 0)
+//				{
+//					int row = (m_playingRow == -1 ? 0 : m_playingRow);
+//					m_lvSongs.setSelection(m_playingRow);
+//				}
+				
+				m_ivBtnDone.setEnabled(true);
+			}
+
+			@Override
+			public void onError() {
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				m_ivBtnDone.setEnabled(true);
+			}
+    	};
+    	getMedia.run();
+    }
+    
+    protected void releaseResource()
+    {
+    	if( m_mediaPlayer != null)
+    	{
+    		m_mediaPlayer.reset();
+    		m_mediaPlayer = null;
+    		m_crosshairPos = null;
+    		m_playlist = null;
+    		m_selectedCellID = -1;
+    		m_selectedColor = 0;
+    		m_isPlaying = false;
+    	}
+    }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	        // do something on back.
+	    	releaseResource();
+	    	setResult(RESULT_OK);
+	    	finish();
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}
+    
+    @Override
+    protected void onDestroy()
+    {
+    	super.onDestroy();
+    	
+    	StaticResources.m_mediaPlayer = m_mediaPlayer;
+    	StaticResources.m_crosshairPos = m_crosshairPos;
+    	StaticResources.m_playlist = m_playlist;
+    	StaticResources.m_selectedCellID = m_selectedCellID;
+		StaticResources.m_selectedColor = m_selectedColor;
+		StaticResources.m_isPlaying = m_isPlaying;
+    }
+    
+    protected OnClickListener m_onClickListener = new OnClickListener()
+    {
+		@Override
+		public void onClick(View v) {
+			if(v == m_ivBtnDone)
+			{
+				releaseResource();
+				setResult(RESULT_OK);
+		    	finish();
+			}
+			else if(v == m_ivBtnFilters)
+			{
+				if(m_ivBtnFilters.isSelected())
+				{
+					m_ivBtnFilters.setSelected(false);
+				}
+				else
+					m_ivBtnFilters.setSelected(true);
+				
+			}
+			else if(v == m_ivBtnPlaylist)
+			{
+				//launch playlist activity
+			}
+		}
+    };
+    
+    
+    protected void setItemStatus(View view, ItemStatus status)
+    {
+    	if(view != null)
+    	{
+    		View medialayout = view;
+	        
+	        TextView tvIndexLabel = (TextView)medialayout.findViewById(R.id.tvIndexLabel);
+	        ProgressBar pbSongPB = (ProgressBar)medialayout.findViewById(R.id.pbSongProgressBar);
+	        ImageView ivBtnStop = (ImageView)medialayout.findViewById(R.id.ivBtnStop);
+	        
+	        if(status == ItemStatus.NORMAL)
+	        {
+	        	tvIndexLabel.setVisibility(View.VISIBLE);
+	        	pbSongPB.setVisibility(View.INVISIBLE);
+	        	ivBtnStop.setVisibility(View.INVISIBLE);
+	        }
+	        else if(status == ItemStatus.PLAYING)
+	        {
+	        	tvIndexLabel.setVisibility(View.INVISIBLE);
+	        	pbSongPB.setVisibility(View.INVISIBLE);
+	        	ivBtnStop.setVisibility(View.VISIBLE);
+	        }
+	        else if(status == ItemStatus.DOWNLOADING)
+	        {
+	        	tvIndexLabel.setVisibility(View.INVISIBLE);
+	        	pbSongPB.setVisibility(View.VISIBLE);
+	        	ivBtnStop.setVisibility(View.INVISIBLE);
+	        }
+    	}
+    }
+    
+    AdapterView.OnItemClickListener m_onItemClickListener = new AdapterView.OnItemClickListener() {
+	    public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+	    	
+	        if(m_playlist != null && m_playlist.m_media != null && position < m_playlist.m_media.size())
+	        {
+	        	if(m_selectedCellID >= 0)
+	        	{
+	        		if(m_selectedCellID >= m_lvSongs.getFirstVisiblePosition() && 
+	        			m_selectedCellID <= m_lvSongs.getLastVisiblePosition())
+	        		{
+	        			View view = m_lvSongs.getChildAt(m_selectedCellID - m_lvSongs.getFirstVisiblePosition());
+	        			setItemStatus(view, ItemStatus.NORMAL);
+	        		}
+	        	}
+	        	
+	        	Media media = m_playlist.m_media.get(position);
+	        	stopMedia();
+	        	
+	        	setItemStatus(v, ItemStatus.DOWNLOADING);
+	        	
+	        	m_playingRow = position;
+		        m_selectedCellID = position;
+		        
+		        try {
+					m_mediaPlayer.setDataSource(media.m_previewURL.toString());
+					m_mediaPlayer.prepare();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		        
+		        
+	        }
+        }
+    };
+    
+    private class MediaArrayAdapter extends ArrayAdapter<Media>
+    {
+    	Context context;
+    	ArrayList<Media> m_media;
+    	int m_resourceId ;
+    	
+	    public MediaArrayAdapter(Activity activity, int resourceId, ArrayList<Media> arraylist)
+	    {
+	        super(activity, resourceId, arraylist);
+	        context = activity;
+	        m_media = arraylist;
+	        m_resourceId = resourceId;
+	    }
+	
+	    public View getView(int i, View view, ViewGroup viewgroup)
+	    {
+	        View medialayout = view;
+	        if(medialayout == null)
+	        {
+	        	medialayout = ((LayoutInflater)context.getSystemService("layout_inflater")).inflate(m_resourceId, null);
+	        	//medialayout.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.WRAP_CONTENT, 50));
+	        }
+	        
+	        final View finalMediaView = medialayout;
+	        final Media media = (Media)m_media.get(i);
+	        
+	        final TextView tvIndexLabel = (TextView)medialayout.findViewById(R.id.tvIndexLabel);
+	        final ProgressBar pbSongPB = (ProgressBar)medialayout.findViewById(R.id.pbSongProgressBar);
+	        final ImageView ivBtnStop = (ImageView)medialayout.findViewById(R.id.ivBtnStop);
+	        final TextView tvTitleLabel = (TextView)medialayout.findViewById(R.id.tvTitleLabel);
+	        final TextView tvColorBar = (TextView)medialayout.findViewById(R.id.tvColorBar);
+	        final ImageView ivBtnAdd = (ImageView)medialayout.findViewById(R.id.ivBtnAdd);
+	        final ImageView ivBtnCheck = (ImageView)medialayout.findViewById(R.id.ivBtnCheck);
+	        
+	        tvIndexLabel.setText(String.valueOf(i + 1));
+	        tvTitleLabel.setText(media.m_title);
+	        tvColorBar.setBackgroundColor(m_selectedColor);
+	        
+	        tvIndexLabel.setVisibility(View.VISIBLE);
+	        tvTitleLabel.setVisibility(View.VISIBLE);
+	        tvColorBar.setVisibility(View.VISIBLE);
+	        pbSongPB.setVisibility(View.INVISIBLE);
+	        ivBtnStop.setVisibility(View.INVISIBLE);
+	        
+	        if(LocalPlaylist.sharedPlaylist().existsInPlaylist(media))
+	        {
+	        	ivBtnAdd.setVisibility(View.INVISIBLE);
+	        	ivBtnCheck.setVisibility(View.VISIBLE);
+	        }
+	        else
+	        {
+	        	ivBtnAdd.setVisibility(View.VISIBLE);
+	        	ivBtnCheck.setVisibility(View.INVISIBLE);
+	        }
+	        
+	        if(m_selectedCellID == i)
+	        {
+	        	if(m_isPlaying)
+	        	{
+	        		//playing current item
+	        		setItemStatus(finalMediaView, ItemStatus.PLAYING);
+	        	}
+	        	else
+	        	{
+	        		// downloading
+	        		setItemStatus(finalMediaView, ItemStatus.DOWNLOADING);
+	        	}
+	        }
+	        else
+	        {
+	        	setItemStatus(finalMediaView, ItemStatus.NORMAL);
+	        }
+	        
+	        
+	        View.OnClickListener clicklistener = new View.OnClickListener()
+		    {
+				@Override
+				public void onClick(View v) {
+					if(v == ivBtnAdd)
+					{
+						ivBtnCheck.setVisibility(View.VISIBLE);
+						ivBtnAdd.setVisibility(View.INVISIBLE);
+						LocalPlaylist.sharedPlaylist().addToPlaylist(media);
+						updatePlaylistBtn();
+					}
+					else if(v == ivBtnCheck)
+					{
+						ivBtnCheck.setVisibility(View.INVISIBLE);
+						ivBtnAdd.setVisibility(View.VISIBLE);
+						LocalPlaylist.sharedPlaylist().removeFromPlaylist(media);
+						updatePlaylistBtn();
+					}
+					else if(v == ivBtnStop)
+					{
+						stopMedia();
+						setItemStatus(finalMediaView, ItemStatus.NORMAL);
+					}
+				}
+		    };
+		    
+		    ivBtnAdd.setOnClickListener(clicklistener);
+		    ivBtnCheck.setOnClickListener(clicklistener);
+		    ivBtnStop.setOnClickListener(clicklistener);
+		    
+	        return medialayout;
+	    }
+	    
+	    
+    }
+    
+    protected void stopMedia()
+    {
+    	if(m_mediaPlayer != null)
+    	{
+    		m_mediaPlayer.reset();
+    	}
+    	m_isPlaying = false;
+    	m_selectedCellID = -1;
+    }
+    
+    protected OnCompletionListener m_mpCompletionListener = new OnCompletionListener()
+    {
+    	public void onCompletion(MediaPlayer mp) {
+    		Log.v(LOGTAG, "Song Playing is completed");
+    		if(m_selectedCellID >= m_lvSongs.getFirstVisiblePosition() && 
+        		m_selectedCellID <= m_lvSongs.getLastVisiblePosition())
+    		{
+    			View view = m_lvSongs.getChildAt(m_selectedCellID - m_lvSongs.getFirstVisiblePosition());
+    			setItemStatus(view, ItemStatus.NORMAL);
+    		}
+    		stopMedia();
+    	}
+    };
+    
+    protected OnBufferingUpdateListener m_mpBufferingUpdateListener = new OnBufferingUpdateListener()
+    {
+    	public void onBufferingUpdate(MediaPlayer mp, int percent) {
+    		
+    		int nowPercent = (int)(((float)mp.getCurrentPosition()/mp.getDuration())*100);
+    		
+    		Log.v(LOGTAG, "onBufferingUpdate buffer percent = " + percent + "  nowPercent = " + nowPercent);
+    		
+    		View medialayout = null;
+    		if(m_selectedCellID >= m_lvSongs.getFirstVisiblePosition() && 
+        			m_selectedCellID <= m_lvSongs.getLastVisiblePosition())
+    		{
+				medialayout = m_lvSongs.getChildAt(m_selectedCellID - m_lvSongs.getFirstVisiblePosition());
+    		}
+	        
+    		
+    		if(percent < 100 && 
+    				( (m_isPlaying == false  && nowPercent + 50 > percent) || 
+    				  (m_isPlaying == true && nowPercent + 5 > percent))  )
+    		{
+    			//now loading media
+    	        setItemStatus(medialayout, ItemStatus.DOWNLOADING);
+    		}
+    		else
+    		{
+    			m_isPlaying = true;
+    			setItemStatus(medialayout, ItemStatus.PLAYING);
+    	        mp.start();
+    		}
+    	}
+    };
+    
+    protected OnErrorListener m_mpErrorListener = new OnErrorListener()
+    {
+
+		@Override
+		public boolean onError(MediaPlayer mp, int what, int extra) {
+			Log.v(LOGTAG, "onError what = " + what + "  extra = " + extra);
+			
+			
+			if(m_selectedCellID >= m_lvSongs.getFirstVisiblePosition() && 
+	        		m_selectedCellID <= m_lvSongs.getLastVisiblePosition())
+    		{
+    			View view = m_lvSongs.getChildAt(m_selectedCellID - m_lvSongs.getFirstVisiblePosition());
+    			setItemStatus(view, ItemStatus.NORMAL);
+    		}
+			
+			stopMedia();
+			
+			return false;
+		}
+    	
+    };
+    
+    public static int getColorFromFloatVal(float red, float green, float blue, float alpha)
+    {
+    	return Color.argb((int)(alpha * 255), (int)(red * 255), (int)(green * 255), (int)(blue * 255));
     }
     
     private void colorOfPoint(float ptX, float ptY)
@@ -320,92 +858,6 @@ public class MoodMap extends Activity implements OnTouchListener{
         	}
         }
 	}
-    
-    @Override
-	public boolean onTouch(View view, MotionEvent event) {
-
-    	if(view == m_ivMoodMap)
-    	{
-    		float ratioTo320 = (float)m_rlMoodMapSize / 320;
-    		float curX = event.getX();
-    		float ratX = curX / ratioTo320;
-    		float curY = event.getY();
-    		float ratY = curY / ratioTo320;
-    		
-    		Log.i(LOGTAG, " curX = " + curX + " curY = " + curY);
-    		
-			switch(event.getAction() & MotionEvent.ACTION_MASK)
-			{
-			case MotionEvent.ACTION_DOWN:
-				float d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
-			    if( d <= 121.0f)
-			    {
-			    	m_ivMessage.setVisibility(View.INVISIBLE);
-			    	m_ivSelector.setVisibility(View.VISIBLE);
-			    	setMoodMapElemPos(m_ivSelector, (int)curX, (int)curY);
-			    	
-			    	
-			    	m_ivRing.setVisibility(View.VISIBLE);
-			    	m_ivRing.startAnimation(m_animFadeIn);
-			    	
-			    	//m_ivGlow.setVisibility(View.VISIBLE);
-			    	//m_ivGlow.startAnimation(m_animFadeIn);
-			    	
-			    	colorOfPoint(ratX, ratY);
-			    	ringImageByFillingColor(m_selectedColor);
-			    	
-			    }
-				break;
-			case MotionEvent.ACTION_MOVE:
-				d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
-			    if( d <= 121.0f)
-			    {
-			    	setMoodMapElemPos(m_ivSelector, (int)curX, (int)curY);
-			    	colorOfPoint(ratX, ratY);
-			    	ringImageByFillingColor(m_selectedColor);
-			    }
-				break;
-			case MotionEvent.ACTION_UP:
-				m_ivRing.setVisibility(View.INVISIBLE);
-		    	m_ivRing.startAnimation(m_animFadeOut);
-		    	//m_ivGlow.startAnimation(m_animFadeIn);
-		    	d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
-			    if( d <= 121.0f)
-			    {
-			    	// get the ID
-			        int x = (int)(ratX/20.166);
-			        int y = (int)(ratY/20.166);
-			        m_playlistID = idArray[y][x];
-			        m_playingRow = -1;
-			        getPlaylistFromServer();
-			    }
-				break;
-			}
-    	}
-		return true;
-    	
-	}
-    
-    private void getPlaylistFromServer()
-    {
-    	
-    }
-    
-    protected OnClickListener m_onClickListener = new OnClickListener()
-    {
-		@Override
-		public void onClick(View v) {
-			if(v == m_rlMoodMap)
-			{
-				
-			}
-		}
-    };
-    
-    public static int getColorFromFloatVal(float red, float green, float blue, float alpha)
-    {
-    	return Color.argb((int)(alpha * 255), (int)(red * 255), (int)(green * 255), (int)(blue * 255));
-    }
     
     int[][] colors = 
 	{

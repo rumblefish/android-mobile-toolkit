@@ -3,7 +3,9 @@ package com.rumblefish.friendlymusic.api;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Playlist {
 	public int m_id;
@@ -13,38 +15,95 @@ public class Playlist {
 	public URL m_imageURL;
 	public ArrayList<Media> m_media;
 	
-	public static Playlist initWithDictionary(HashMap<String, Object > dict)
+	public static Playlist initWithDictionary(JSONObject dict)
 	{
-		Playlist playlist = new Playlist();
-		playlist.m_title = dict.get("title").toString();
-		playlist.m_id = ((Integer)dict.get("id")).intValue();
+		Playlist playlist = null;
 		
-		String imageURLString =  (dict.get("image_url")).toString();
-		if(imageURLString!=null)
+		playlist = new Playlist();
+		try
 		{
-			imageURLString = imageURLString.trim();
-			if(imageURLString.length() > 0)
+			playlist.m_title = dict.getString("title").toString();
+		}
+		catch(Exception e)
+		{
+			playlist.m_title = "";
+		}
+		
+		try
+		{
+			playlist.m_id = dict.getInt("id");
+		}
+		catch(Exception e)
+		{
+			playlist.m_id = 0;
+		}
+		
+		try
+		{
+			String imageURLString = dict.getString("image_url");
+			if(imageURLString!=null)
 			{
-				try {
-					playlist.m_imageURL = new URL(imageURLString);
-				} catch (MalformedURLException e) {
-					playlist.m_imageURL = null;
-					e.printStackTrace();
+				imageURLString = imageURLString.trim();
+				if(imageURLString.length() > 0)
+				{
+					try {
+						playlist.m_imageURL = new URL(imageURLString);
+					} catch (MalformedURLException e) {
+						playlist.m_imageURL = null;
+						e.printStackTrace();
+					}
 				}
 			}
 		}
-		
-		playlist.m_editorial = dict.get("editorial").toString();
-		ArrayList<Object> mediaList = (ArrayList<Object>)dict.get("media");
-		
-		playlist.m_media = new ArrayList<Media>();
-		for(int i = 0; i < mediaList.size(); i++)
+		catch(Exception e)
 		{
-			playlist.m_media.add(Media.initWithDictionary((HashMap<String, Object>)mediaList.get(i)));
+			playlist.m_imageURL = null;
+		}
+		
+		try
+		{
+			playlist.m_editorial = dict.getString("editorial");
+		}
+		catch(Exception e)
+		{
+			playlist.m_editorial = "";
+		}
+		
+		try
+		{
+			JSONArray mediaList = dict.getJSONArray("media");
+			playlist.m_media = Media.getMediaList(mediaList);
+		}
+		catch(Exception e)
+		{
+			playlist.m_media = null;
 		}
 		
 		return playlist;
 	}
+	
+	public static ArrayList<Playlist> getPlaylistList(JSONArray array)
+	{
+		ArrayList<Playlist> result = new ArrayList<Playlist>();
+		for(int i = 0; i < array.length(); i++)
+		{
+			try
+			{
+				JSONObject obj = (JSONObject) array.get(i);
+				Playlist newPlaylist = Playlist.initWithDictionary(obj);
+				if(newPlaylist != null)
+				{
+					result.add(newPlaylist);
+				}
+			}
+			catch(Exception e)
+			{
+				continue;
+			}
+		}
+		return result;
+	}
+	
 	
 	public String strippedEditorial()
 	{

@@ -1,7 +1,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="50dp"
+    android:layout_height="wrap_content"
     android:background="@color/moodmap_listbackground" >
 
     <ImageView
@@ -16,7 +16,7 @@
     <RelativeLayout
         android:id="@+id/rlIndex"
         android:layout_width="50dp"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:padding = '5dp' >
@@ -24,9 +24,8 @@
         <TextView
          android:id="@+id/tvIndexLabel"
          android:layout_width="match_parent"
-         android:layout_height="match_parent"
+         android:layout_height="50dp"
          android:gravity="center"
-         android:text="1"
          android:textColor="#FFFFFF"
          android:textSize="14dp" />
         
@@ -52,7 +51,7 @@
     <ImageView
         android:id="@+id/ivSeparator2"
         android:layout_width="2dp"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/rlIndex"
         android:background="@drawable/separator_vertical"
@@ -61,14 +60,13 @@
     <TextView
         android:id="@+id/tvTitleLabel"
         android:layout_width="75dp"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_alignLeft="@+id/ivSeparator2"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/rlButtons"
         android:ellipsize="end"
         android:gravity="left|center_vertical"
         android:maxLines="1"
-        android:text="Popular Things"
         android:textColor="#FFFFFF"
         android:textSize="14dp"
         android:layout_marginLeft="5dp" />
@@ -76,7 +74,7 @@
     <TextView
         android:id="@+id/tvColorBar"
         android:layout_width="5dp"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:background="#679e24"/>
@@ -84,7 +82,7 @@
     <RelativeLayout
         android:id="@+id/rlButtons"
         android:layout_width="50dp"
-        android:layout_height="fill_parent"
+        android:layout_height="50dp"
         android:layout_toLeftOf="@+id/tvColorBar"
         android:layout_marginRight = "5dp"
         android:layout_alignParentTop="true"

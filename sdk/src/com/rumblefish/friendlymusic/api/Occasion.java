@@ -1,7 +1,8 @@
 package com.rumblefish.friendlymusic.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Occasion {
 	public int m_id;
@@ -9,27 +10,73 @@ public class Occasion {
 	public ArrayList<Occasion>	m_children;
 	public ArrayList<Playlist> m_playlists;
 	
-	public static Occasion initWithDictionary(HashMap<String, Object > dict)
+	public static Occasion initWithDictionary(JSONObject dict)
 	{
-		Occasion occasion = new Occasion();
-		occasion.m_name = dict.get("name").toString();
-		occasion.m_id = ((Integer)dict.get("id")).intValue();
 		
-		ArrayList<Object> children = (ArrayList<Object>)dict.get("children");
-		occasion.m_children = new ArrayList<Occasion>();
-		for(int i = 0; i < children.size(); i++)
+		Occasion occasion = new Occasion();
+		
+		try
+		{	
+			occasion.m_name = dict.getString("name");
+		}
+		catch(Exception e)
 		{
-			occasion.m_children.add(Occasion.initWithDictionary((HashMap<String, Object>)children.get(i)));
+			occasion.m_name = "";
 		}
 		
-		ArrayList<Object> playlists = (ArrayList<Object>)dict.get("playlists");
-		occasion.m_playlists = new ArrayList<Playlist>();
-		for(int i = 0; i < playlists.size(); i++)
+		try
+		{	
+			occasion.m_id = dict.getInt("id");
+		}
+		catch(Exception e)
 		{
-			occasion.m_playlists.add(Playlist.initWithDictionary((HashMap<String, Object>)playlists.get(i)));
+			occasion.m_id = 0;
+		}
+		
+		try
+		{	
+			JSONArray children = dict.getJSONArray("children");
+			occasion.m_children = getPlayOccasion(children);
+		}
+		catch(Exception e)
+		{
+			occasion.m_children = null;
+		}
+		
+		
+		try
+		{	
+			JSONArray playlists = dict.getJSONArray("playlists");
+			occasion.m_playlists = Playlist.getPlaylistList(playlists);
+		}
+		catch(Exception e)
+		{
+			occasion.m_playlists = null;
 		}
 		
 		return occasion;
+	
 	}
 	
+	public static ArrayList<Occasion> getPlayOccasion(JSONArray array)
+	{
+		ArrayList<Occasion> result = new ArrayList<Occasion>();
+		for(int i = 0; i < array.length(); i++)
+		{
+			try
+			{
+				JSONObject obj = (JSONObject) array.get(i);
+				Occasion newOccasion = Occasion.initWithDictionary(obj);
+				if(newOccasion != null)
+				{
+					result.add(newOccasion);
+				}
+			}
+			catch(Exception e)
+			{
+				continue;
+			}
+		}
+		return result;
+	}
 }
