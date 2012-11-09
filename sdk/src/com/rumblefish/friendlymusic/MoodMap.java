@@ -788,10 +788,6 @@ public class MoodMap extends Activity implements OnTouchListener{
     	
     };
     
-    public static int getColorFromFloatVal(float red, float green, float blue, float alpha)
-    {
-    	return Color.argb((int)(alpha * 255), (int)(red * 255), (int)(green * 255), (int)(blue * 255));
-    }
     
     private void colorOfPoint(float ptX, float ptY)
     {
@@ -865,12 +861,12 @@ public class MoodMap extends Activity implements OnTouchListener{
 			0, 
 			0, 
 			0,
-			getColorFromFloatVal(0.2549f, 0.7647f, 0.2078f, 1.0f),   //1
-			getColorFromFloatVal(0.4078f, 0.7804f, 0.1412f, 1.0f),   //2
-			getColorFromFloatVal(0.5451f, 0.7922f, 0.0863f, 1.0f),   //3
-			getColorFromFloatVal(0.698f, 0.8275f, 0.0157f, 1.0f),    //31
-			getColorFromFloatVal(0.8353f, 0.8235f, 0.0039f, 1.0f),   //32
-			getColorFromFloatVal(0.8784f, 0.7804f, 0.0039f, 1.0f),   //33
+			RFUtils.getColorFromFloatVal(0.2549f, 0.7647f, 0.2078f, 1.0f),   //1
+			RFUtils.getColorFromFloatVal(0.4078f, 0.7804f, 0.1412f, 1.0f),   //2
+			RFUtils.getColorFromFloatVal(0.5451f, 0.7922f, 0.0863f, 1.0f),   //3
+			RFUtils.getColorFromFloatVal(0.698f, 0.8275f, 0.0157f, 1.0f),    //31
+			RFUtils.getColorFromFloatVal(0.8353f, 0.8235f, 0.0039f, 1.0f),   //32
+			RFUtils.getColorFromFloatVal(0.8784f, 0.7804f, 0.0039f, 1.0f),   //33
 			0, 
 			0, 
 			0
@@ -878,140 +874,140 @@ public class MoodMap extends Activity implements OnTouchListener{
         {
 			0, 
 			0,
-			getColorFromFloatVal(0.1725f, 0.7176f, 0.3176f, 1.0f),   //4
-			getColorFromFloatVal(0.298f, 0.7098f, 0.2392f, 1.0f),    //5
-			getColorFromFloatVal(0.4471f, 0.7176f, 0.1804f, 1.0f),   //6
-			getColorFromFloatVal(0.5922f, 0.7373f, 0.1294f, 1.0f),   //7
-			getColorFromFloatVal(0.7412f, 0.7647f, 0.0588f, 1.0f),   //34
-			getColorFromFloatVal(0.8627f, 0.7686f, 0.0039f, 1.0f),   //35
-			getColorFromFloatVal(0.902f, 0.7608f, 0.0039f, 1.0f),    //36
-			getColorFromFloatVal(0.9255f, 0.7333f, 0.0039f, 1.0f),   //37
+			RFUtils.getColorFromFloatVal(0.1725f, 0.7176f, 0.3176f, 1.0f),   //4
+			RFUtils.getColorFromFloatVal(0.298f, 0.7098f, 0.2392f, 1.0f),    //5
+			RFUtils.getColorFromFloatVal(0.4471f, 0.7176f, 0.1804f, 1.0f),   //6
+			RFUtils.getColorFromFloatVal(0.5922f, 0.7373f, 0.1294f, 1.0f),   //7
+			RFUtils.getColorFromFloatVal(0.7412f, 0.7647f, 0.0588f, 1.0f),   //34
+			RFUtils.getColorFromFloatVal(0.8627f, 0.7686f, 0.0039f, 1.0f),   //35
+			RFUtils.getColorFromFloatVal(0.902f, 0.7608f, 0.0039f, 1.0f),    //36
+			RFUtils.getColorFromFloatVal(0.9255f, 0.7333f, 0.0039f, 1.0f),   //37
 			0, 
 			0
         }, 
         {
 			0,
-			getColorFromFloatVal(0.1098f, 0.6745f, 0.4471f, 1.0f),   //8
-			getColorFromFloatVal(0.2157f, 0.6549f, 0.3529f, 1.0f),   //9
-			getColorFromFloatVal(0.3373f, 0.6392f, 0.2706f, 1.0f),   //10
-			getColorFromFloatVal(0.4824f, 0.6588f, 0.2157f, 1.0f),   //11
-			getColorFromFloatVal(0.6275f, 0.6784f, 0.1569f, 1.0f),   //12
-			getColorFromFloatVal(0.7569f, 0.6784f, 0.0941f, 1.0f),   //38
-			getColorFromFloatVal(0.8784f, 0.702f, 0.0039f, 1.0f),    //39
-			getColorFromFloatVal(0.9255f, 0.7176f, 0.0039f, 1.0f),   //40
-			getColorFromFloatVal(0.9451f, 0.7137f, 0.0039f, 1.0f),   //41
-			getColorFromFloatVal(0.9647f, 0.6902f, 0.0039f, 1.0f),   //42
+			RFUtils.getColorFromFloatVal(0.1098f, 0.6745f, 0.4471f, 1.0f),   //8
+			RFUtils.getColorFromFloatVal(0.2157f, 0.6549f, 0.3529f, 1.0f),   //9
+			RFUtils.getColorFromFloatVal(0.3373f, 0.6392f, 0.2706f, 1.0f),   //10
+			RFUtils.getColorFromFloatVal(0.4824f, 0.6588f, 0.2157f, 1.0f),   //11
+			RFUtils.getColorFromFloatVal(0.6275f, 0.6784f, 0.1569f, 1.0f),   //12
+			RFUtils.getColorFromFloatVal(0.7569f, 0.6784f, 0.0941f, 1.0f),   //38
+			RFUtils.getColorFromFloatVal(0.8784f, 0.702f, 0.0039f, 1.0f),    //39
+			RFUtils.getColorFromFloatVal(0.9255f, 0.7176f, 0.0039f, 1.0f),   //40
+			RFUtils.getColorFromFloatVal(0.9451f, 0.7137f, 0.0039f, 1.0f),   //41
+			RFUtils.getColorFromFloatVal(0.9647f, 0.6902f, 0.0039f, 1.0f),   //42
 			0
         },
         {
-			getColorFromFloatVal(0.0627f, 0.6314f, 0.5608f, 1.0f),   //13
-			getColorFromFloatVal(0.1569f, 0.6118f, 0.4745f, 1.0f),   //14
-			getColorFromFloatVal(0.2706f, 0.5922f, 0.3804f, 1.0f),   //15
-			getColorFromFloatVal(0.3922f, 0.5843f, 0.3059f, 1.0f),   //16
-			getColorFromFloatVal(0.5255f, 0.5961f, 0.2588f, 1.0f),   //17
-			getColorFromFloatVal(0.6549f, 0.6157f, 0.1882f, 1.0f),   //18
-			getColorFromFloatVal(0.7608f, 0.6039f, 0.1137f, 1.0f),   //43
-			getColorFromFloatVal(0.8706f, 0.6196f, 0.0431f, 1.0f),   //44
-			getColorFromFloatVal(0.9333f, 0.6353f, 0.0039f, 1.0f),   //45
-			getColorFromFloatVal(0.9647f, 0.6745f, 0.0039f, 1.0f),   //46
-			getColorFromFloatVal(0.9765f, 0.6824f, 0.0039f, 1.0f),   //47
-			getColorFromFloatVal(0.9804f, 0.6745f, 0.0078f, 1.0f),   //48
+			RFUtils.getColorFromFloatVal(0.0627f, 0.6314f, 0.5608f, 1.0f),   //13
+			RFUtils.getColorFromFloatVal(0.1569f, 0.6118f, 0.4745f, 1.0f),   //14
+			RFUtils.getColorFromFloatVal(0.2706f, 0.5922f, 0.3804f, 1.0f),   //15
+			RFUtils.getColorFromFloatVal(0.3922f, 0.5843f, 0.3059f, 1.0f),   //16
+			RFUtils.getColorFromFloatVal(0.5255f, 0.5961f, 0.2588f, 1.0f),   //17
+			RFUtils.getColorFromFloatVal(0.6549f, 0.6157f, 0.1882f, 1.0f),   //18
+			RFUtils.getColorFromFloatVal(0.7608f, 0.6039f, 0.1137f, 1.0f),   //43
+			RFUtils.getColorFromFloatVal(0.8706f, 0.6196f, 0.0431f, 1.0f),   //44
+			RFUtils.getColorFromFloatVal(0.9333f, 0.6353f, 0.0039f, 1.0f),   //45
+			RFUtils.getColorFromFloatVal(0.9647f, 0.6745f, 0.0039f, 1.0f),   //46
+			RFUtils.getColorFromFloatVal(0.9765f, 0.6824f, 0.0039f, 1.0f),   //47
+			RFUtils.getColorFromFloatVal(0.9804f, 0.6745f, 0.0078f, 1.0f),   //48
         },
         {
-			getColorFromFloatVal(0.0941f, 0.5725f, 0.5961f, 1.0f),   //19
-			getColorFromFloatVal(0.2157f, 0.549f, 0.498f, 1.0f),     //20
-			getColorFromFloatVal(0.3176f, 0.5216f, 0.4157f, 1.0f),   //21
-			getColorFromFloatVal(0.4275f, 0.5216f, 0.3412f, 1.0f),   //22
-			getColorFromFloatVal(0.5608f, 0.5333f, 0.2863f, 1.0f),   //23
-			getColorFromFloatVal(0.6627f, 0.5294f, 0.2078f, 1.0f),   //24
-			getColorFromFloatVal(0.7647f, 0.5333f, 0.1412f, 1.0f),   //49
-			getColorFromFloatVal(0.8588f, 0.5451f, 0.0706f, 1.0f),   //50
-			getColorFromFloatVal(0.9529f, 0.5686f, 0.0039f, 1.0f),   //51
-			getColorFromFloatVal(0.9725f, 0.5961f, 0.0039f, 1.0f),   //52
-			getColorFromFloatVal(0.9804f, 0.6314f, 0.0039f, 1.0f),   //53
-			getColorFromFloatVal(0.9804f, 0.651f, 0.0196f, 1.0f),    //54
+			RFUtils.getColorFromFloatVal(0.0941f, 0.5725f, 0.5961f, 1.0f),   //19
+			RFUtils.getColorFromFloatVal(0.2157f, 0.549f, 0.498f, 1.0f),     //20
+			RFUtils.getColorFromFloatVal(0.3176f, 0.5216f, 0.4157f, 1.0f),   //21
+			RFUtils.getColorFromFloatVal(0.4275f, 0.5216f, 0.3412f, 1.0f),   //22
+			RFUtils.getColorFromFloatVal(0.5608f, 0.5333f, 0.2863f, 1.0f),   //23
+			RFUtils.getColorFromFloatVal(0.6627f, 0.5294f, 0.2078f, 1.0f),   //24
+			RFUtils.getColorFromFloatVal(0.7647f, 0.5333f, 0.1412f, 1.0f),   //49
+			RFUtils.getColorFromFloatVal(0.8588f, 0.5451f, 0.0706f, 1.0f),   //50
+			RFUtils.getColorFromFloatVal(0.9529f, 0.5686f, 0.0039f, 1.0f),   //51
+			RFUtils.getColorFromFloatVal(0.9725f, 0.5961f, 0.0039f, 1.0f),   //52
+			RFUtils.getColorFromFloatVal(0.9804f, 0.6314f, 0.0039f, 1.0f),   //53
+			RFUtils.getColorFromFloatVal(0.9804f, 0.651f, 0.0196f, 1.0f),    //54
         },
         {
-			getColorFromFloatVal(0.1333f, 0.4941f, 0.6078f, 1.0f),   //25
-			getColorFromFloatVal(0.251f, 0.4745f, 0.5294f, 1.0f),    //26
-			getColorFromFloatVal(0.3569f, 0.4667f, 0.4431f, 1.0f),   //27
-			getColorFromFloatVal(0.4706f, 0.4667f, 0.3725f, 1.0f),   //28
-			getColorFromFloatVal(0.5765f, 0.4667f, 0.302f, 1.0f),    //29
-			getColorFromFloatVal(0.6627f, 0.4667f, 0.2392f, 1.0f),   //30
-			getColorFromFloatVal(0.7608f, 0.4706f, 0.1647f, 1.0f),   //55
-			getColorFromFloatVal(0.8549f, 0.4824f, 0.098f, 1.0f),    //56
-			getColorFromFloatVal(0.9373f, 0.4941f, 0.0353f, 1.0f),   //57
-			getColorFromFloatVal(0.9804f, 0.5176f, 0.0039f, 1.0f),   //58
-			getColorFromFloatVal(0.9804f, 0.549f, 0.0196f, 1.0f),    //59
-			getColorFromFloatVal(0.9804f, 0.5765f, 0.0275f, 1.0f),   //60
+			RFUtils.getColorFromFloatVal(0.1333f, 0.4941f, 0.6078f, 1.0f),   //25
+			RFUtils.getColorFromFloatVal(0.251f, 0.4745f, 0.5294f, 1.0f),    //26
+			RFUtils.getColorFromFloatVal(0.3569f, 0.4667f, 0.4431f, 1.0f),   //27
+			RFUtils.getColorFromFloatVal(0.4706f, 0.4667f, 0.3725f, 1.0f),   //28
+			RFUtils.getColorFromFloatVal(0.5765f, 0.4667f, 0.302f, 1.0f),    //29
+			RFUtils.getColorFromFloatVal(0.6627f, 0.4667f, 0.2392f, 1.0f),   //30
+			RFUtils.getColorFromFloatVal(0.7608f, 0.4706f, 0.1647f, 1.0f),   //55
+			RFUtils.getColorFromFloatVal(0.8549f, 0.4824f, 0.098f, 1.0f),    //56
+			RFUtils.getColorFromFloatVal(0.9373f, 0.4941f, 0.0353f, 1.0f),   //57
+			RFUtils.getColorFromFloatVal(0.9804f, 0.5176f, 0.0039f, 1.0f),   //58
+			RFUtils.getColorFromFloatVal(0.9804f, 0.549f, 0.0196f, 1.0f),    //59
+			RFUtils.getColorFromFloatVal(0.9804f, 0.5765f, 0.0275f, 1.0f),   //60
         },
 		{
-			getColorFromFloatVal(0.1373f, 0.3961f, 0.6471f, 1.0f),   //91
-			getColorFromFloatVal(0.2706f, 0.3961f, 0.5451f, 1.0f),   //92
-			getColorFromFloatVal(0.3725f, 0.4f, 0.4627f, 1.0f),      //93
-			getColorFromFloatVal(0.4784f, 0.4f, 0.3961f, 1.0f),      //94
-			getColorFromFloatVal(0.5765f, 0.3961f, 0.3255f, 1.0f),   //95
-			getColorFromFloatVal(0.6667f, 0.4039f, 0.2627f, 1.0f),   //96
-			getColorFromFloatVal(0.7569f, 0.4118f, 0.2f, 1.0f),      //61
-			getColorFromFloatVal(0.8392f, 0.4157f, 0.1333f, 1.0f),   //62
-			getColorFromFloatVal(0.9255f, 0.4431f, 0.0667f, 1.0f),   //63
-			getColorFromFloatVal(0.9804f, 0.4627f, 0.0196f, 1.0f),   //64
-			getColorFromFloatVal(0.9804f, 0.4863f, 0.0314f, 1.0f),   //65
-			getColorFromFloatVal(0.9804f, 0.4745f, 0.0275f, 1.0f),   //66
+			RFUtils.getColorFromFloatVal(0.1373f, 0.3961f, 0.6471f, 1.0f),   //91
+			RFUtils.getColorFromFloatVal(0.2706f, 0.3961f, 0.5451f, 1.0f),   //92
+			RFUtils.getColorFromFloatVal(0.3725f, 0.4f, 0.4627f, 1.0f),      //93
+			RFUtils.getColorFromFloatVal(0.4784f, 0.4f, 0.3961f, 1.0f),      //94
+			RFUtils.getColorFromFloatVal(0.5765f, 0.3961f, 0.3255f, 1.0f),   //95
+			RFUtils.getColorFromFloatVal(0.6667f, 0.4039f, 0.2627f, 1.0f),   //96
+			RFUtils.getColorFromFloatVal(0.7569f, 0.4118f, 0.2f, 1.0f),      //61
+			RFUtils.getColorFromFloatVal(0.8392f, 0.4157f, 0.1333f, 1.0f),   //62
+			RFUtils.getColorFromFloatVal(0.9255f, 0.4431f, 0.0667f, 1.0f),   //63
+			RFUtils.getColorFromFloatVal(0.9804f, 0.4627f, 0.0196f, 1.0f),   //64
+			RFUtils.getColorFromFloatVal(0.9804f, 0.4863f, 0.0314f, 1.0f),   //65
+			RFUtils.getColorFromFloatVal(0.9804f, 0.4745f, 0.0275f, 1.0f),   //66
         },
         {
-			getColorFromFloatVal(0.1294f, 0.298f, 0.7137f, 1.0f),    //97
-			getColorFromFloatVal(0.251f, 0.3137f, 0.6118f, 1.0f),    //98
-			getColorFromFloatVal(0.3882f, 0.3294f, 0.5098f, 1.0f),   //99
-			getColorFromFloatVal(0.5059f, 0.3412f, 0.4431f, 1.0f),   //100
-			getColorFromFloatVal(0.5843f, 0.3373f, 0.349f, 1.0f),    //101
-			getColorFromFloatVal(0.6667f, 0.3373f, 0.2863f, 1.0f),   //102
-			getColorFromFloatVal(0.749f, 0.3529f, 0.2235f, 1.0f),    //67
-			getColorFromFloatVal(0.8235f, 0.3686f, 0.1608f, 1.0f),   //68
-			getColorFromFloatVal(0.8941f, 0.3843f, 0.1059f, 1.0f),   //69
-			getColorFromFloatVal(0.9529f, 0.4039f, 0.0549f, 1.0f),   //70
-			getColorFromFloatVal(0.9804f, 0.3922f, 0.0275f, 1.0f),   //71
-			getColorFromFloatVal(0.9804f, 0.3098f, 0.0275f, 1.0f),   //72
+			RFUtils.getColorFromFloatVal(0.1294f, 0.298f, 0.7137f, 1.0f),    //97
+			RFUtils.getColorFromFloatVal(0.251f, 0.3137f, 0.6118f, 1.0f),    //98
+			RFUtils.getColorFromFloatVal(0.3882f, 0.3294f, 0.5098f, 1.0f),   //99
+			RFUtils.getColorFromFloatVal(0.5059f, 0.3412f, 0.4431f, 1.0f),   //100
+			RFUtils.getColorFromFloatVal(0.5843f, 0.3373f, 0.349f, 1.0f),    //101
+			RFUtils.getColorFromFloatVal(0.6667f, 0.3373f, 0.2863f, 1.0f),   //102
+			RFUtils.getColorFromFloatVal(0.749f, 0.3529f, 0.2235f, 1.0f),    //67
+			RFUtils.getColorFromFloatVal(0.8235f, 0.3686f, 0.1608f, 1.0f),   //68
+			RFUtils.getColorFromFloatVal(0.8941f, 0.3843f, 0.1059f, 1.0f),   //69
+			RFUtils.getColorFromFloatVal(0.9529f, 0.4039f, 0.0549f, 1.0f),   //70
+			RFUtils.getColorFromFloatVal(0.9804f, 0.3922f, 0.0275f, 1.0f),   //71
+			RFUtils.getColorFromFloatVal(0.9804f, 0.3098f, 0.0275f, 1.0f),   //72
         },
         {
-			getColorFromFloatVal(0.1529f, 0.2471f, 0.7333f, 1.0f),   //103
-			getColorFromFloatVal(0.2275f, 0.2314f, 0.6784f, 1.0f),   //104
-			getColorFromFloatVal(0.3647f, 0.2667f, 0.5882f, 1.0f),   //105
-			getColorFromFloatVal(0.5137f, 0.298f, 0.498f, 1.0f),     //106
-			getColorFromFloatVal(0.5961f, 0.2941f, 0.4039f, 1.0f),   //107
-			getColorFromFloatVal(0.6588f, 0.2902f, 0.3176f, 1.0f),   //108
-			getColorFromFloatVal(0.7373f, 0.298f, 0.2549f, 1.0f),    //73
-			getColorFromFloatVal(0.8039f, 0.3137f, 0.2f, 1.0f),      //74
-			getColorFromFloatVal(0.8627f, 0.3373f, 0.1412f, 1.0f),   //75
-			getColorFromFloatVal(0.9294f, 0.3451f, 0.0824f, 1.0f),   //76
-			getColorFromFloatVal(0.9804f, 0.298f, 0.0196f, 1.0f),    //77
-			getColorFromFloatVal(0.9804f, 0.2627f, 0.0235f, 1.0f),   //78
+			RFUtils.getColorFromFloatVal(0.1529f, 0.2471f, 0.7333f, 1.0f),   //103
+			RFUtils.getColorFromFloatVal(0.2275f, 0.2314f, 0.6784f, 1.0f),   //104
+			RFUtils.getColorFromFloatVal(0.3647f, 0.2667f, 0.5882f, 1.0f),   //105
+			RFUtils.getColorFromFloatVal(0.5137f, 0.298f, 0.498f, 1.0f),     //106
+			RFUtils.getColorFromFloatVal(0.5961f, 0.2941f, 0.4039f, 1.0f),   //107
+			RFUtils.getColorFromFloatVal(0.6588f, 0.2902f, 0.3176f, 1.0f),   //108
+			RFUtils.getColorFromFloatVal(0.7373f, 0.298f, 0.2549f, 1.0f),    //73
+			RFUtils.getColorFromFloatVal(0.8039f, 0.3137f, 0.2f, 1.0f),      //74
+			RFUtils.getColorFromFloatVal(0.8627f, 0.3373f, 0.1412f, 1.0f),   //75
+			RFUtils.getColorFromFloatVal(0.9294f, 0.3451f, 0.0824f, 1.0f),   //76
+			RFUtils.getColorFromFloatVal(0.9804f, 0.298f, 0.0196f, 1.0f),    //77
+			RFUtils.getColorFromFloatVal(0.9804f, 0.2627f, 0.0235f, 1.0f),   //78
         },
         {
 			0,
-			getColorFromFloatVal(0.2392f, 0.2f, 0.7098f, 1.0f),      //109
-			getColorFromFloatVal(0.3137f, 0.2039f, 0.6784f, 1.0f),   //110
-			getColorFromFloatVal(0.4627f, 0.2431f, 0.5804f, 1.0f),   //111
-			getColorFromFloatVal(0.5922f, 0.2471f, 0.4627f, 1.0f),   //112
-			getColorFromFloatVal(0.6667f, 0.2549f, 0.3765f, 1.0f),   //113
-			getColorFromFloatVal(0.7137f, 0.2588f, 0.298f, 1.0f),    //79
-			getColorFromFloatVal(0.7725f, 0.2667f, 0.2353f, 1.0f),   //80
-			getColorFromFloatVal(0.8392f, 0.2784f, 0.1725f, 1.0f),   //81
-			getColorFromFloatVal(0.9176f, 0.2549f, 0.0863f, 1.0f),   //82
-			getColorFromFloatVal(0.9804f, 0.2118f, 0.0235f, 1.0f),   //83
+			RFUtils.getColorFromFloatVal(0.2392f, 0.2f, 0.7098f, 1.0f),      //109
+			RFUtils.getColorFromFloatVal(0.3137f, 0.2039f, 0.6784f, 1.0f),   //110
+			RFUtils.getColorFromFloatVal(0.4627f, 0.2431f, 0.5804f, 1.0f),   //111
+			RFUtils.getColorFromFloatVal(0.5922f, 0.2471f, 0.4627f, 1.0f),   //112
+			RFUtils.getColorFromFloatVal(0.6667f, 0.2549f, 0.3765f, 1.0f),   //113
+			RFUtils.getColorFromFloatVal(0.7137f, 0.2588f, 0.298f, 1.0f),    //79
+			RFUtils.getColorFromFloatVal(0.7725f, 0.2667f, 0.2353f, 1.0f),   //80
+			RFUtils.getColorFromFloatVal(0.8392f, 0.2784f, 0.1725f, 1.0f),   //81
+			RFUtils.getColorFromFloatVal(0.9176f, 0.2549f, 0.0863f, 1.0f),   //82
+			RFUtils.getColorFromFloatVal(0.9804f, 0.2118f, 0.0235f, 1.0f),   //83
 			0
         },
         { 
 			0, 
 			0,
-			getColorFromFloatVal(0.3255f, 0.1843f, 0.698f, 1.0f),    //114
-			getColorFromFloatVal(0.4f, 0.1882f, 0.6627f, 1.0f),      //115
-			getColorFromFloatVal(0.5569f, 0.2196f, 0.5569f, 1.0f),   //116
-			getColorFromFloatVal(0.6471f, 0.2196f, 0.4314f, 1.0f),   //117
-			getColorFromFloatVal(0.7176f, 0.2196f, 0.3373f, 1.0f),   //84
-			getColorFromFloatVal(0.7843f, 0.2039f, 0.2353f, 1.0f),   //85
-			getColorFromFloatVal(0.8667f, 0.1725f, 0.1412f, 1.0f),   //86
-			getColorFromFloatVal(0.9412f, 0.1412f, 0.0667f, 1.0f),   //87
+			RFUtils.getColorFromFloatVal(0.3255f, 0.1843f, 0.698f, 1.0f),    //114
+			RFUtils.getColorFromFloatVal(0.4f, 0.1882f, 0.6627f, 1.0f),      //115
+			RFUtils.getColorFromFloatVal(0.5569f, 0.2196f, 0.5569f, 1.0f),   //116
+			RFUtils.getColorFromFloatVal(0.6471f, 0.2196f, 0.4314f, 1.0f),   //117
+			RFUtils.getColorFromFloatVal(0.7176f, 0.2196f, 0.3373f, 1.0f),   //84
+			RFUtils.getColorFromFloatVal(0.7843f, 0.2039f, 0.2353f, 1.0f),   //85
+			RFUtils.getColorFromFloatVal(0.8667f, 0.1725f, 0.1412f, 1.0f),   //86
+			RFUtils.getColorFromFloatVal(0.9412f, 0.1412f, 0.0667f, 1.0f),   //87
 			0, 
 			0
         },
@@ -1019,12 +1015,12 @@ public class MoodMap extends Activity implements OnTouchListener{
 			0, 
 			0, 
 			0,
-			getColorFromFloatVal(0.3922f, 0.1647f, 0.6902f, 1.0f),   //118
-			getColorFromFloatVal(0.4784f, 0.1725f, 0.6314f, 1.0f),   //119
-			getColorFromFloatVal(0.6353f, 0.1765f, 0.4824f, 1.0f),   //120
-			getColorFromFloatVal(0.7608f, 0.1451f, 0.3059f, 1.0f),   //88
-			getColorFromFloatVal(0.8863f, 0.0824f, 0.149f, 1.0f),    //89
-			getColorFromFloatVal(0.9216f, 0.0745f, 0.0863f, 1.0f),   //90
+			RFUtils.getColorFromFloatVal(0.3922f, 0.1647f, 0.6902f, 1.0f),   //118
+			RFUtils.getColorFromFloatVal(0.4784f, 0.1725f, 0.6314f, 1.0f),   //119
+			RFUtils.getColorFromFloatVal(0.6353f, 0.1765f, 0.4824f, 1.0f),   //120
+			RFUtils.getColorFromFloatVal(0.7608f, 0.1451f, 0.3059f, 1.0f),   //88
+			RFUtils.getColorFromFloatVal(0.8863f, 0.0824f, 0.149f, 1.0f),    //89
+			RFUtils.getColorFromFloatVal(0.9216f, 0.0745f, 0.0863f, 1.0f),   //90
 			0, 
 			0, 
 			0

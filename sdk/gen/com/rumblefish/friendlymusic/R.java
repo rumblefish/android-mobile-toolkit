@@ -15,9 +15,17 @@ public final class R {
     public static final class attr {
     }
     public static final class color {
+        public static final int caption_stroke=0x7f050003;
         public static final int home_background=0x7f050000;
         public static final int moodmap_background=0x7f050001;
         public static final int moodmap_listbackground=0x7f050002;
+        public static final int normal_text=0x7f050005;
+        public static final int shadow=0x7f050006;
+        public static final int text_stroke=0x7f050004;
+    }
+    public static final class dimen {
+        public static final int default_fontsize=0x7f060001;
+        public static final int default_stroke=0x7f060000;
     }
     public static final class drawable {
         public static final int btn_add=0x7f020000;
@@ -51,69 +59,100 @@ public final class R {
         public static final int moodmap_ring=0x7f02001c;
         public static final int moodmap_selector=0x7f02001d;
         public static final int moodmap_start_message=0x7f02001e;
-        public static final int occasion_logo=0x7f02001f;
-        public static final int separator_horizontal=0x7f020020;
-        public static final int separator_vertical=0x7f020021;
-        public static final int song_check=0x7f020022;
+        public static final int navbar_back=0x7f02001f;
+        public static final int navbar_btn_done=0x7f020020;
+        public static final int navbar_btn_done_norm=0x7f020021;
+        public static final int navbar_btn_done_press=0x7f020022;
+        public static final int navbar_btn_playlist=0x7f020023;
+        public static final int navbar_btn_playlist_norm=0x7f020024;
+        public static final int navbar_btn_playlist_press=0x7f020025;
+        public static final int navbar_btn_removeall=0x7f020026;
+        public static final int navbar_btn_removeall_norm=0x7f020027;
+        public static final int navbar_btn_removeall_press=0x7f020028;
+        public static final int navbar_friendlymusic_logo=0x7f020029;
+        public static final int navbar_friendlymusic_logo_music=0x7f02002a;
+        public static final int ocassion_holiday=0x7f02002b;
+        public static final int occasion_bg=0x7f02002c;
+        public static final int occasion_celebration=0x7f02002d;
+        public static final int occasion_currentevents=0x7f02002e;
+        public static final int occasion_logo=0x7f02002f;
+        public static final int occasion_mood=0x7f020030;
+        public static final int occasion_sports=0x7f020031;
+        public static final int occasion_themes=0x7f020032;
+        public static final int occasionbanner=0x7f020033;
+        public static final int separator_horizontal=0x7f020034;
+        public static final int separator_vertical=0x7f020035;
+        public static final int song_check=0x7f020036;
     }
     public static final class id {
-        public static final int ivBgSurround=0x7f09000a;
-        public static final int ivBtnAdd=0x7f09001e;
-        public static final int ivBtnCheck=0x7f09001f;
-        public static final int ivBtnDone=0x7f09000b;
-        public static final int ivBtnFilters=0x7f09000c;
-        public static final int ivBtnPlaylist=0x7f09000d;
-        public static final int ivBtnStop=0x7f09001a;
-        public static final int ivCrosshairs=0x7f090012;
-        public static final int ivEditorsPick=0x7f090008;
-        public static final int ivGlow=0x7f090011;
-        public static final int ivHomeHeader=0x7f090000;
-        public static final int ivIcons=0x7f09000f;
-        public static final int ivLogo=0x7f09000e;
-        public static final int ivMessage=0x7f090013;
-        public static final int ivMoodMap=0x7f090002;
-        public static final int ivOccasion=0x7f090005;
-        public static final int ivRing=0x7f090010;
-        public static final int ivSelector=0x7f090014;
-        public static final int ivSeparator1=0x7f090003;
-        public static final int ivSeparator2=0x7f090006;
-        public static final int ivSeparator3=0x7f090009;
-        public static final int lvSongs=0x7f090015;
-        public static final int menu_settings=0x7f090020;
-        public static final int pbActivityIndicator=0x7f090016;
-        public static final int pbSongProgressBar=0x7f090019;
-        public static final int rlButtons=0x7f09001c;
-        public static final int rlEditorsPick=0x7f090007;
-        public static final int rlIndex=0x7f090017;
-        public static final int rlMoodMap=0x7f090001;
-        public static final int rlOccasion=0x7f090004;
-        public static final int tvColorBar=0x7f09001d;
-        public static final int tvIndexLabel=0x7f090018;
-        public static final int tvTitleLabel=0x7f09001b;
+        public static final int ivBgSurround=0x7f0a000a;
+        public static final int ivBtnAdd=0x7f0a0024;
+        public static final int ivBtnCheck=0x7f0a0025;
+        public static final int ivBtnDone=0x7f0a000b;
+        public static final int ivBtnFilters=0x7f0a000c;
+        public static final int ivBtnPlaylist=0x7f0a000d;
+        public static final int ivBtnStop=0x7f0a0020;
+        public static final int ivCrosshairs=0x7f0a0012;
+        public static final int ivEditorsPick=0x7f0a0008;
+        public static final int ivGlow=0x7f0a0011;
+        public static final int ivHomeHeader=0x7f0a0000;
+        public static final int ivIcons=0x7f0a000f;
+        public static final int ivLogo=0x7f0a000e;
+        public static final int ivMessage=0x7f0a0013;
+        public static final int ivMoodMap=0x7f0a0002;
+        public static final int ivNavBtnDone=0x7f0a0018;
+        public static final int ivNavBtnPlaylist=0x7f0a001a;
+        public static final int ivNavBtnRemoveAll=0x7f0a001b;
+        public static final int ivNavLogoImage=0x7f0a0019;
+        public static final int ivOccasion=0x7f0a0005;
+        public static final int ivRing=0x7f0a0010;
+        public static final int ivSelector=0x7f0a0014;
+        public static final int ivSeparator1=0x7f0a0003;
+        public static final int ivSeparator2=0x7f0a0006;
+        public static final int ivSeparator3=0x7f0a0009;
+        public static final int lvSongs=0x7f0a0015;
+        public static final int menu_settings=0x7f0a0026;
+        public static final int pbActivityIndicator=0x7f0a0016;
+        public static final int pbSongProgressBar=0x7f0a001f;
+        public static final int rlButtons=0x7f0a0022;
+        public static final int rlEditorsPick=0x7f0a0007;
+        public static final int rlIndex=0x7f0a001d;
+        public static final int rlMoodMap=0x7f0a0001;
+        public static final int rlNavBar=0x7f0a0017;
+        public static final int rlOccasion=0x7f0a0004;
+        public static final int rlOccasionContent=0x7f0a001c;
+        public static final int tvColorBar=0x7f0a0023;
+        public static final int tvIndexLabel=0x7f0a001e;
+        public static final int tvTitleLabel=0x7f0a0021;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int friendlymusic=0x7f030001;
         public static final int moodmap=0x7f030002;
-        public static final int play_list_item=0x7f030003;
+        public static final int navigationbar=0x7f030003;
+        public static final int occasion=0x7f030004;
+        public static final int play_list_item=0x7f030005;
     }
     public static final class menu {
-        public static final int activity_main=0x7f080000;
+        public static final int activity_main=0x7f090000;
     }
     public static final class string {
-        public static final int app_name=0x7f060000;
-        public static final int hello_world=0x7f060001;
-        public static final int home_editorspickimage=0x7f060007;
-        public static final int home_headimage=0x7f060004;
-        public static final int home_moodimage=0x7f060005;
-        public static final int home_occasionimage=0x7f060006;
-        public static final int home_separatorimage=0x7f060008;
-        public static final int menu_settings=0x7f060002;
-        public static final int moodmap_image=0x7f060009;
-        public static final int moodmap_listimage=0x7f06000a;
-        public static final int title_activity_main=0x7f060003;
+        public static final int app_name=0x7f070000;
+        public static final int fontname=0x7f07000d;
+        public static final int hello_world=0x7f070001;
+        public static final int home_editorspickimage=0x7f070007;
+        public static final int home_headimage=0x7f070004;
+        public static final int home_moodimage=0x7f070005;
+        public static final int home_occasionimage=0x7f070006;
+        public static final int home_separatorimage=0x7f070008;
+        public static final int menu_settings=0x7f070002;
+        public static final int moodmap_image=0x7f070009;
+        public static final int moodmap_listimage=0x7f07000a;
+        public static final int navbar_image=0x7f07000b;
+        public static final int occasion_image=0x7f07000c;
+        public static final int title_activity_main=0x7f070003;
     }
     public static final class style {
-        public static final int AppTheme=0x7f070000;
+        public static final int AppTheme=0x7f080000;
     }
 }

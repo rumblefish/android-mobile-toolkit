@@ -12,4 +12,9 @@
 	
     <string name="moodmap_image">Image of moodmap screen</string>
     <string name="moodmap_listimage">Images of song list in mood map screen</string>
+    
+    <string name="navbar_image">Image of Navigation Bar</string>
+    <string name="occasion_image">Image of occasion screen</string>
+    
+    <string name="fontname">Arial-Rounded-MT</string>
 </resources>

@@ -14,6 +14,6 @@ public class URLRequest
 	{
 		m_serverURL = null;
 		m_nameValuePairs = null;
-		m_timelimit = 10000;
+		m_timelimit = 100000;
 	}
 }

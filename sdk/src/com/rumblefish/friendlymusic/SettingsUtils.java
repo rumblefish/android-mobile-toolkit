@@ -22,4 +22,18 @@ public class SettingsUtils {
 		editor.putBoolean(keystr, value);
 		editor.commit();
 	}
+	
+	public static String getStringForKey(Activity ctx, String keystr, String defValue)
+	{
+		SharedPreferences settings = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+		return settings.getString(keystr, defValue);
+	}
+	
+	public static void setStringForKey(Activity ctx, String keystr, String value)
+	{
+		SharedPreferences settings = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+		Editor editor = settings.edit();
+		editor.putString(keystr, value);
+		editor.commit();
+	}
 }

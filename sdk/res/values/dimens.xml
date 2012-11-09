@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_stroke">5px</dimen>
+    <dimen name="default_fontsize">35px</dimen>
+    
+</resources>

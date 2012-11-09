@@ -1,0 +1,48 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rlNavBar"
+    android:layout_width="fill_parent"
+    android:layout_height="56dp"
+    android:background="@drawable/navbar_back"
+    android:padding="8dp" >
+    
+	<ImageView
+		android:id="@+id/ivNavBtnDone"
+		android:layout_width="70dp"
+		android:layout_height="40dp"
+		android:layout_alignParentLeft="true"
+		android:layout_centerVertical="true"
+		android:src="@drawable/navbar_btn_done" 
+		android:contentDescription="@string/navbar_image"/>
+
+	<ImageView
+	    android:id="@+id/ivNavLogoImage"
+	    android:layout_width="100dp"
+	    android:layout_height="40dp"
+	    android:layout_toLeftOf="@+id/ivNavBtnPlaylist"
+	    android:layout_toRightOf="@+id/ivNavBtnDone"
+	    android:layout_marginLeft="5dp"
+	    android:layout_marginRight="5dp"
+	    android:layout_centerVertical="true"
+	    android:contentDescription="@string/navbar_image"
+	    android:src="@drawable/navbar_friendlymusic_logo" />
+
+	<ImageView
+	    android:id="@+id/ivNavBtnPlaylist"
+	    android:layout_width="95dp"
+	    android:layout_height="40dp"
+	    android:layout_alignParentRight="true"
+	    android:layout_centerVertical="true"
+	    android:src="@drawable/navbar_btn_playlist"
+	    android:contentDescription="@string/navbar_image" />
+  	
+  	<ImageView
+	    android:id="@+id/ivNavBtnRemoveAll"
+	    android:layout_width="105dp"
+	    android:layout_height="40dp"
+	    android:layout_alignParentRight="true"
+	    android:layout_centerVertical="true"
+	    android:visibility="gone"
+	    android:src="@drawable/navbar_btn_removeall"
+	    android:contentDescription="@string/navbar_image" />
+  	
+</RelativeLayout>

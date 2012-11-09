@@ -1,6 +1,10 @@
 package com.rumblefish.friendlymusic;
 
+import com.rumblefish.friendlymusic.api.RFAPI;
+import com.rumblefish.friendlymusic.api.RFAPI.RFAPIEnv;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -25,9 +29,11 @@ public class FriendlyMusic extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.friendlymusic);
         
         initView();
+        
+        RFAPI.rumbleWithEnvironment(RFAPIEnv.RFAPIEnvProduction, "PUBLIC_KEY", "PASSWORD");
         
     }
     
@@ -47,6 +53,10 @@ public class FriendlyMusic extends Activity {
     	m_rlMoodMap 	= (RelativeLayout)findViewById(R.id.rlMoodMap);
     	m_rlOccasion 	= (RelativeLayout)findViewById(R.id.rlOccasion);
     	m_rlEditorsPick	= (RelativeLayout)findViewById(R.id.rlEditorsPick);
+    	
+    	m_rlMoodMap.setOnClickListener(m_onClickListener);
+    	m_rlOccasion.setOnClickListener(m_onClickListener);
+    	m_rlEditorsPick.setOnClickListener(m_onClickListener);
     }
 
     
@@ -56,15 +66,18 @@ public class FriendlyMusic extends Activity {
 		public void onClick(View v) {
 			if(v == m_rlMoodMap)
 			{
-				
+				Intent intent = new Intent(FriendlyMusic.this, MoodMap.class);
+				startActivity(intent);
 			}
 			else if(v == m_rlOccasion)
 			{
-				
+				Intent intent = new Intent(FriendlyMusic.this, OccasionActivity.class);
+				startActivity(intent);
 			}
 			else if(v == m_rlEditorsPick)
 			{
-				
+				Intent intent = new Intent(FriendlyMusic.this, MoodMap.class);
+				startActivity(intent);
 			}
 		}
     };

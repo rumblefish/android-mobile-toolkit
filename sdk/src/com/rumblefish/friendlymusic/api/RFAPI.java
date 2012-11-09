@@ -11,11 +11,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 
 
 public class RFAPI {
 	
+	public static final String LOGTAG = "RFAPI";
 	// enum variables
 	public enum RFAPIEnv
 	{
@@ -282,6 +284,8 @@ public class RFAPI {
 				api.password = password;
 				api.ipAddress = obj.toString();
 				api.bInitialized = true;
+				
+				Log.v(LOGTAG,"apiWithEnvironment, RFAPI initialized");
 			}
 
 			@Override
@@ -295,6 +299,8 @@ public class RFAPI {
 	
 	public static void rumbleWithEnvironment(RFAPIEnv env, String publicKey, String password)
 	{
+		Log.v(LOGTAG,"rumbleWithEnvironment, RFAPI initialization started!");
+		
 		Producer producer = RFAPI.apiWithEnvironment(env, RFAPIVersion.RFAPIVersion2, publicKey, password);
 		producer.run();
 	}
