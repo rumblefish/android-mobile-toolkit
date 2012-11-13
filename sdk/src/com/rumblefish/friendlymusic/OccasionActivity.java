@@ -4,43 +4,44 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.Window;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.Transformation;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rumblefish.friendlymusic.api.Occasion;
 import com.rumblefish.friendlymusic.api.Playlist;
 import com.rumblefish.friendlymusic.api.Producer;
 import com.rumblefish.friendlymusic.api.ProducerDelegate;
 import com.rumblefish.friendlymusic.api.RFAPI;
-import com.rumblefish.friendlymusic.components.ImageViewKu;
-
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.media.MediaPlayer;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.View.OnClickListener;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import com.rumblefish.friendlymusic.view.RFScrollView;
+import com.rumblefish.friendlymusic.view.RFTextView;
+import com.rumblefish.friendlymusic.view.SongListView;
 
 public class OccasionActivity  extends Activity {
 	
@@ -50,15 +51,18 @@ public class OccasionActivity  extends Activity {
 	public static final int 	OCCASION_IMAGE_DEPTH = 4;
 	public static final float 	OCCASION_IMAGE_SWITCH_DELAY = 2.0f; // seconds
 
-	public static final int		BUTTON_HIDDEN_OFFSET = 480;
+	public static final int 	BUTTON_TEXT_MAXSIZE = 100;
+	public static final int		BUTTON_HIDDEN_OFFSET = 200;
 	public static final int		BUTTON_HEIGHT_FIXED = 35;
 	public static final int		BUTTON_SECOND_HEIGHT = 129;
 	public static final int		BUTTON_THIRD_HEIGHT = 56;
+	public static final int 	BUTTON_BORDER_WIDTH = 2;
 	
 	// member variables
 	RelativeLayout	m_rlContent;
 	RelativeLayout	m_rlNavBar;
-	RelativeLayout	m_rlScroller;
+	RFScrollView	m_svScroller;
+	RelativeLayout	m_rlScrollContent;
 	
 	// navigation buttons
 	ImageView	m_ivBtnNavDone;
@@ -74,7 +78,8 @@ public class OccasionActivity  extends Activity {
 	ImageView	m_ivBtnHoliday;
 	
 	//level buttons
-	TextView 				m_firstButton;
+	RFTextView 				m_firstButton;
+	
 	ArrayList<TextView>		m_secondButtons;
 	ArrayList<TextView>		m_thirdButtons;
 
@@ -87,6 +92,7 @@ public class OccasionActivity  extends Activity {
 	float 	m_ratioTo320X;
 	float 	m_ratioTo480Y;
 	float 	m_minRatio;
+	float 	m_textRatio;
 	
 	
 	//occasions
@@ -95,6 +101,8 @@ public class OccasionActivity  extends Activity {
 	ArrayList<Occasion>						m_occasions;
 	ArrayList<Occasion>						m_occasionStack;
 	
+	Occasion				m_displayedOccasion;
+	ArrayList<Playlist>		m_displayedPlaylists;
 	
 	
 	// colors;
@@ -114,11 +122,13 @@ public class OccasionActivity  extends Activity {
 	int	m_plRow;
 	int m_plSection;
 	
-	// audio player
-	MediaPlayer m_mediaPlayer = null;
+	boolean m_bAnimating = false;
+	
+	// song list view
+	SongListView m_lvPlaylists;
 	
 	
-	
+	@SuppressLint("UseSparseArrays")
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,7 +152,7 @@ public class OccasionActivity  extends Activity {
         m_occasionKeys.add(RFOccasionThemes);
         m_occasionKeys.add(RFOccasionCurrentEvents);
         m_occasionKeys.add(RFOccasionSports);
-        m_occasionKeys.add(RFOccasionSports);
+        m_occasionKeys.add(RFOccasionHoliday);
         
         m_occasionImageDict = new HashMap<Integer, ArrayList<Bitmap>>();
         
@@ -156,15 +166,92 @@ public class OccasionActivity  extends Activity {
         getOccasionsFromServer();
 	}
 	
+	
+	
 	// occasion image utils function start
-	public void updateOccasionImage()
+	
+	public ImageView buttonForOccasion(int key)
 	{
-		
+		if(key == RFOccasionMood)
+		{
+			return m_ivBtnMood;
+		}
+		else if(key == RFOccasionCelebration)
+		{
+			return m_ivBtnCelebration;
+		}
+		else if(key == RFOccasionThemes)
+		{
+			return m_ivBtnTheme;
+		}
+		else if(key == RFOccasionCurrentEvents)
+		{
+			return m_ivBtnEvent;
+		}
+		else if(key == RFOccasionSports)
+		{
+			return m_ivBtnSports;
+		}
+		else if(key == RFOccasionHoliday)
+		{
+			return m_ivBtnHoliday;
+		}
+		return null;
+	}
+	
+	public void updateOccasionImage(boolean updateAll)
+	{
+		Random rand = new Random();
+		if(updateAll == true)
+		{
+			Iterator<Integer> iterator = m_occasionImageDict.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer key = iterator.next();
+				ArrayList<Bitmap> imgs = m_occasionImageDict.get(key);
+				
+				int size = imgs.size();
+				if(size > 0)
+				{
+					ImageView button = buttonForOccasion(key);
+					BitmapDrawable bmDraw = new BitmapDrawable(imgs.get(rand.nextInt(size)));
+					button.setBackgroundDrawable(bmDraw);
+				}
+			}
+		}
+		else
+		{
+			int dictsize = m_occasionImageDict.size(); 
+			int n = rand.nextInt(dictsize);
+			int idx = 0;
+			
+			Iterator<Integer> iterator = m_occasionImageDict.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer key = iterator.next();
+				if(idx == n)
+				{
+					ArrayList<Bitmap> imgs = m_occasionImageDict.get(key);
+					
+					int size = imgs.size();
+					if(size > 0)
+					{
+						ImageView button = buttonForOccasion(key);
+						BitmapDrawable bmDraw = new BitmapDrawable(imgs.get(rand.nextInt(size)));
+						button.setBackgroundDrawable(bmDraw);
+					}
+					break;
+				}
+				idx++;
+			}
+		}
 	}
 	
 	public void getOccasionsFromServer()
 	{
 		m_pbActivityIndicator.setVisibility(View.VISIBLE);
+		m_pbActivityIndicator.bringToFront();
+		
 		final ArrayList<String> displayedOccasionNames = new ArrayList<String>();
 		
 		displayedOccasionNames.add("Celebrations");
@@ -186,6 +273,7 @@ public class OccasionActivity  extends Activity {
 				
 				Log.v(LOGTAG, "getOccasion result");
 				
+				@SuppressWarnings("unchecked")
 				ArrayList<Occasion> arrayOccasion = (ArrayList<Occasion>) obj;
 				for(int i = arrayOccasion.size() - 1; i >= 0 ; i--)
 				{
@@ -214,6 +302,8 @@ public class OccasionActivity  extends Activity {
 			@Override
 			public void onError() {
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				Toast.makeText(OccasionActivity.this, R.string.toast_connection_fail, Toast.LENGTH_LONG).show();
+				getOccasionsFromServer();
 			}
     	};
     	getOccasion.run();
@@ -275,6 +365,8 @@ public class OccasionActivity  extends Activity {
 		}
 		
 		m_bRunning = true;
+		
+		updateOccasionImage(true);
 		m_rotateImagesTimer.start();
 	}
 	
@@ -295,6 +387,24 @@ public class OccasionActivity  extends Activity {
 		}
 	}
 	
+	public void recycleOccasionImages()
+	{
+		Iterator<Integer> iterator = m_occasionImageDict.keySet().iterator();
+		while(iterator.hasNext())
+		{
+			Integer key = iterator.next();
+			ArrayList<Bitmap> imgs = m_occasionImageDict.get(key);
+
+			int i = 0;
+			for(i = 0; i < imgs.size(); i++)
+			{
+				Bitmap bm = imgs.get(i);
+				if(bm.isMutable())
+					bm.recycle();
+			}
+		}
+	}
+	
 	
 	
 	//Levels
@@ -302,6 +412,7 @@ public class OccasionActivity  extends Activity {
 	{
 		if(m_level == 1)
 		{
+//			button.setAlpha(0.5f);
 			if(button == m_ivBtnMood)
 			{
 				m_firstLevelColor = RFUtils.getColorFromFloatVal(0.55f, 0.32f, 0.68f, 1.0f);
@@ -365,9 +476,31 @@ public class OccasionActivity  extends Activity {
 			
 			m_firstButton.setBackgroundColor(m_firstLevelColor);
 			m_firstButton.setTextColor(Color.WHITE);
+
 			showSecondLevel();
 			
 		}
+	}
+	
+	private void scrollerContentResize(float height)
+	{
+		m_rlScrollContent.getLayoutParams().height = (int)height;
+		//Log.v(LOGTAG, "rlContentView set height as " + height + " and now it is " + m_rlScrollContent.getHeight());
+		
+		if(height < m_svScroller.getHeight())
+		{
+			m_svScroller.setScrollingEnabled(false);
+		}
+		else
+		{
+			m_svScroller.setScrollingEnabled(true);
+		}
+		
+		setElemPosSize(m_lvPlaylists, 0, height + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320 * this.m_ratioTo320X, (480 - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y - height);
+//		setElemPosSize(m_pbActivityIndicator, 320 * this.m_ratioTo320X / 2 - m_pbActivityIndicator.getWidth(), height / 2 + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 
+//												m_pbActivityIndicator.getWidth(), m_pbActivityIndicator.getHeight());
+		
+//		m_pbActivityIndicator.bringToFront();
 	}
 	
 	private void pushOccasionNamed(String string)
@@ -386,14 +519,11 @@ public class OccasionActivity  extends Activity {
 		for(int i = 0; i < occasion.m_children.size(); i++)
 		{
 			Occasion child = occasion.m_children.get(i);
-			TextView button = new TextView(this);
+			TextView button = new RFTextView(this);
 			
-			m_rlScroller.addView(button);
-			setElemPosSize(button, 0, (int)(m_ratioTo480Y * (481 + i * 129)), m_ratioTo320X * 320.0f, 129.0f * m_ratioTo480Y);
-			
-			button.setAlpha(0);
+			m_rlScrollContent.addView(button);
 			button.setBackgroundColor(m_secondLevelColor);
-			button.setTextSize(100);
+			button.setTextSize(100 * m_textRatio);
 			button.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 			button.setTextColor(m_secondFontColor);
 			button.setText(child.m_name);
@@ -402,6 +532,11 @@ public class OccasionActivity  extends Activity {
 			
 			m_secondButtons.add(button);
 		}
+		
+		positionSecondButtons(true, null);
+		
+		scrollerContentResize((BUTTON_SECOND_HEIGHT * occasion.m_children.size() * m_ratioTo480Y));
+		
 	}
 	
 	private void pushOccasion(Occasion occasion)
@@ -411,21 +546,26 @@ public class OccasionActivity  extends Activity {
 		{
 			Occasion child = occasion.m_children.get(i);
 			
-			TextView button = new TextView(this);
-			m_rlScroller.addView(button);
+			TextView button = new RFTextView(this);
+			m_rlScrollContent.addView(button);
 			
-			setElemPosSize(button,	0.0f * m_ratioTo320X, (BUTTON_HIDDEN_OFFSET + i * 56) * m_ratioTo480Y, 320.0f * m_ratioTo320X, 56.0f * m_ratioTo480Y) ;
+			button.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 			button.setBackgroundColor(m_thirdLevelColor);
-			button.setTextSize(50);
-			button.setAlpha(0.0f);
+			button.setTextSize(80 * m_textRatio);
 			button.setTextColor(m_thirdFontColor);
 			button.setText(child.m_name.toLowerCase());
 			button.setClickable(true);
 			button.setOnClickListener(m_OnThirdButtonClickListener);
+
 			
 			m_thirdButtons.add(button);
 			
 		}
+		
+		
+		positionThirdButtons(true, null);
+		
+		scrollerContentResize((BUTTON_THIRD_HEIGHT * occasion.m_children.size() + BUTTON_HEIGHT_FIXED) * m_ratioTo480Y);
 	}
 	
 	private void popOccasion()
@@ -442,21 +582,40 @@ public class OccasionActivity  extends Activity {
 		newSet.setFillAfter(true);
 		
 		Rect rt = getElemPosSize(view);
-		TranslateAnimation animMove = new TranslateAnimation(0, targetX - rt.left, 0, targetY - rt.top);
-		ScaleAnimation animResize = new ScaleAnimation(1.0f, targetWidth / rt.width(), 1.0f, targetHeight / rt.height());
+		
+		MoveResizeAnimation animMoveResize = new MoveResizeAnimation(view, duration, rt.width(), targetWidth, rt.height(), targetHeight,
+																					rt.left, targetX, rt.top, targetY);
+		animMoveResize.setFillAfter(true);
+		
+//		float alpha = view.getAlpha();
+//		AlphaAnimation animFade = null; 
+//		if(alpha == 0 && fadeIn == true) 
+//		{
+//			animFade = new AlphaAnimation(0.0f, 1.0f);
+//		}
+//		else if(alpha == 1 && fadeIn == false)
+//		{
+//			animFade = new AlphaAnimation(1.0f, 0.0f);
+//		}
+		
 		AlphaAnimation animFade = null; 
 		if(fadeIn == true) 
+		{
 			animFade = new AlphaAnimation(0.0f, 1.0f);
-		else
+		}
+		else if(fadeIn == false)
+		{
 			animFade = new AlphaAnimation(1.0f, 0.0f);
+		}
 		
-		animMove.setDuration(duration);
-		animResize.setDuration(duration);
-		animFade.setDuration(duration);
+
+		newSet.addAnimation(animMoveResize);
 		
-		newSet.addAnimation(animMove);
-		newSet.addAnimation(animResize);
-		newSet.addAnimation(animFade);
+		if(animFade != null)
+		{
+			animFade.setDuration(duration);
+			newSet.addAnimation(animFade);
+		}
 		
 		view.clearAnimation();
 		view.setAnimation(newSet);
@@ -507,13 +666,16 @@ public class OccasionActivity  extends Activity {
 				continue;
 			if(hidden == true)
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, (BUTTON_HIDDEN_OFFSET + i * 129) * m_ratioTo480Y, 320.0f * m_ratioTo320X, 129.0f * m_ratioTo480Y) ;
-				button.setAlpha(0.0f);
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(BUTTON_SECOND_HEIGHT * i * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH) ;
+//				button.setAlpha(0);
+				button.setVisibility(View.INVISIBLE);
 			}
 			else
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, (i * 129) * m_ratioTo480Y, 320.0f * m_ratioTo320X, 129.0f * m_ratioTo480Y) ;
-				button.setAlpha(1.0f);
+				
+				setElemPosSize(button,	0.0f * m_ratioTo320X, (int)(i * BUTTON_SECOND_HEIGHT) * m_ratioTo480Y, 320.0f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+//				button.setAlpha(1); 
+				button.setVisibility(View.VISIBLE);
 			}
 			button.clearAnimation();
 		}
@@ -531,13 +693,15 @@ public class OccasionActivity  extends Activity {
 			
 			if(hidden == true)
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, (BUTTON_HIDDEN_OFFSET + i * 56) * m_ratioTo480Y, 320.0f * m_ratioTo320X, 56.0f * m_ratioTo480Y) ;
-				button.setAlpha(0.0f);
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+				button.setVisibility(View.INVISIBLE);
+//				button.setAlpha(0);
 			}
 			else
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, (BUTTON_HEIGHT_FIXED * 2 + i * 56) * m_ratioTo480Y, 320.0f * m_ratioTo320X, 56.0f * m_ratioTo480Y) ;
-				button.setAlpha(1.0f);
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y + (int)( i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+				button.setVisibility(View.VISIBLE);
+//				button.setAlpha(1);
 			}
 			button.clearAnimation();
 		}
@@ -545,24 +709,24 @@ public class OccasionActivity  extends Activity {
 	
 	public void animateToHomeScreen()
 	{
+		Log.v(LOGTAG, "Animate to Home Screen");
+		
+		m_rlContent.invalidate();
 		m_occasionStack.clear();
 		
-		if(m_plRow >= 0)
-		{
-			//stop();
-		}
+		m_lvPlaylists.stopMedia();
+		m_lvPlaylists.setVisibility(View.INVISIBLE);
 		
 		AnimationSet animSet = null;
-		
+		m_bAnimating = true;
 		
 		//hide second buttons
 		for(int i = 0; i < m_secondButtons.size(); i++)
 		{
 			TextView button = m_secondButtons.get(i);
 			Point pos = getElemPos(button);
-			button.setAlpha(1.0f);
 			animSet = addMoveResizeAnimation(500, 	button,		 0.0f * m_ratioTo320X,  pos.y + BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 
-																320f * m_ratioTo320X, 129.0f * m_ratioTo480Y,	false) ;
+																320f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
 			animSet.startNow();
 		}
 		
@@ -571,9 +735,8 @@ public class OccasionActivity  extends Activity {
 		{
 			TextView button = m_thirdButtons.get(i);
 			Point pos = getElemPos(button);
-			button.setAlpha(1.0f);
 			animSet = addMoveResizeAnimation(500, 	button,		0.0f * m_ratioTo320X,  pos.y + (BUTTON_HIDDEN_OFFSET - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y, 
-																320f * m_ratioTo320X,  56.0f * m_ratioTo480Y,	false) ;
+																320f * m_ratioTo320X,  BUTTON_THIRD_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
 			animSet.startNow();
 		}
 		
@@ -582,13 +745,18 @@ public class OccasionActivity  extends Activity {
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				
+				//hides first button
+				m_firstButton.setVisibility(View.INVISIBLE);
+				
+				//removes all buttons!
 				m_thirdButtons.clear();
 				m_secondButtons.clear();
 				
-				m_rlScroller.setVisibility(View.INVISIBLE);
-				m_rlScroller.removeAllViews();
+				m_svScroller.setVisibility(View.INVISIBLE);
+				m_rlScrollContent.removeAllViews();
 				
 				
+				//home buttons animate to appear
 				AnimationSet animSetNew;
 				
 				setButtonsHidden(false);
@@ -606,6 +774,8 @@ public class OccasionActivity  extends Activity {
 					@Override
 					public void onAnimationEnd(Animation animation) {
 						positionFirstButtons(false);
+						m_rlContent.invalidate();
+						m_bAnimating = false;
 					}
 
 					@Override
@@ -618,8 +788,6 @@ public class OccasionActivity  extends Activity {
 						
 					}
 				});
-				
-				
 				//table.reloadData
 			}
 
@@ -634,11 +802,20 @@ public class OccasionActivity  extends Activity {
 			}
 		});
 		m_level = 1;
+		
+		//playlist hide
+		m_lvPlaylists.stopMedia();
+		m_lvPlaylists.removeAll();
+		m_lvPlaylists.setVisibility(View.INVISIBLE);
+		
 	}
 	
 	//Level showing functions
 	public void showSecondLevel()
 	{
+		
+		m_bAnimating = true;
+		m_rlContent.invalidate();
 		
 		//animation1 0.5s
 		AnimationSet animSet;
@@ -657,20 +834,23 @@ public class OccasionActivity  extends Activity {
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				
-				Log.v(LOGTAG, "First Button's Animation onAnimationEnd");
+//				Log.v(LOGTAG, "First Button's Animation onAnimationEnd");
 				positionFirstButtons(true);
 
 				AnimationSet animSetNew = null;
 				
-				m_rlScroller.setVisibility(View.VISIBLE);
+				m_svScroller.setVisibility(View.VISIBLE);
 				
-				//animation2 0.5s
+				//second buttons animate to appear!
 				for(int i = 0; i < m_secondButtons.size(); i++)
 				{
 					TextView button = m_secondButtons.get(i);
+//					button.setAlpha(1);
+					button.setVisibility(View.VISIBLE);
+					button.invalidate();
+					
 					Point pos = getElemPos(button);
-					button.setAlpha(1.0f);
-					animSetNew = addMoveResizeAnimation(500, 	button,		 0.0f * m_ratioTo320X,  pos.y - 480.0f * m_ratioTo480Y, 320f * m_ratioTo320X, 129.0f * m_ratioTo480Y,	true) ;
+					animSetNew = addMoveResizeAnimation(500, 	button,		 0.0f,  pos.y - BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	true) ;
 					animSetNew.startNow();
 				}
 				
@@ -678,47 +858,59 @@ public class OccasionActivity  extends Activity {
 				{
 					@Override
 					public void onAnimationEnd(Animation animation) {
-						Log.v(LOGTAG, "Second Button's Animation onAnimationEnd");
+//						Log.v(LOGTAG, "Second Button's Animation onAnimationEnd");
 						
 						//animation2 0.5s
 						positionSecondButtons(false, null);
-						m_firstButton.setAlpha(1);
+						scrollerContentResize(m_secondButtons.size() * BUTTON_SECOND_HEIGHT * m_ratioTo480Y);
+						m_firstButton.setVisibility(View.VISIBLE);
+						
+						m_rlContent.invalidate();
+						m_bAnimating = false;
 					}
 
 					@Override
 					public void onAnimationRepeat(Animation animation) {
-						Log.v(LOGTAG, "Second Button's Animation onAnimationRepeat");
+//						Log.v(LOGTAG, "Second Button's Animation onAnimationRepeat");
 					}
 
 					@Override
 					public void onAnimationStart(Animation animation) {
-						Log.v(LOGTAG, "Second Button's Animation onAnimationStart");
+//						Log.v(LOGTAG, "Second Button's Animation onAnimationStart");
 					}
 				});
 			}
 
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-				// TODO Auto-generated method stub
-				Log.v(LOGTAG, "First Button's Animation onAnimationRepeat");
+//				Log.v(LOGTAG, "First Button's Animation onAnimationRepeat");
 			}
 			@Override
 			public void onAnimationStart(Animation animation) {
-				// TODO Auto-generated method stub
-				Log.v(LOGTAG, "First Button's Animation onAnimationStart");
+//				Log.v(LOGTAG, "First Button's Animation onAnimationStart");
 			}
 		});
 		
 		animSet.setDuration(500);
 		animSet.startNow();
 		
+		//playlist
+		m_lvPlaylists.stopMedia();
+		m_lvPlaylists.removeAll();
+		m_lvPlaylists.setVisibility(View.INVISIBLE);
+		
 		m_level = 2;
 	}
 	
-	public void showThirdLevel(View button)
+	public void showThirdLevel(final View button)
 	{
+		m_rlContent.invalidate();
+		
 		if(m_level == 2)
 		{
+			
+			m_bAnimating = true;
+			
 			int buttonTag = 0;
 			
 			for(int i = 0; i < m_secondButtons.size(); i++)
@@ -736,13 +928,13 @@ public class OccasionActivity  extends Activity {
 	        pushOccasion(child);
 	        
 	        final TextView tvButton = (TextView)button;
-	        tvButton.setTextSize(32.0f);
-	        
+
 	        //second buttons disappears (animation 0.5 start)
 	        
 	        //leaves selected second button.
 	        m_secondRect = getElemPosSize(tvButton);
-	        AnimationSet animSet = addMoveResizeAnimation(500, 	tvButton, 0.0f * m_ratioTo320X,   BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y,	true) ;
+	        tvButton.setTextSize(32.0f * m_textRatio);
+	        AnimationSet animSet = addMoveResizeAnimation(500, 	tvButton, 0,   0 , 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y  - BUTTON_BORDER_WIDTH, true) ;
 			animSet.startNow();
 			
 			//let the rest of buttons disappear!
@@ -752,7 +944,7 @@ public class OccasionActivity  extends Activity {
 	        	{
 	        		View b = m_secondButtons.get(i);
 	        		Point point = getElemPos(b);
-	        		addMoveResizeAnimation(500, b,	0.0f * m_ratioTo320X,   point.y + BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 320f * m_ratioTo320X, 129.0f * m_ratioTo480Y,	false) ;
+	        		addMoveResizeAnimation(500, b,	0, point.y + BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
 	        	}
 			}
 	        
@@ -761,43 +953,54 @@ public class OccasionActivity  extends Activity {
 				@Override
 				public void onAnimationEnd(Animation animation) {
 					
-					tvButton.clearAnimation();
-					setElemPosSize(tvButton, 0.0f * m_ratioTo320X,   BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y);
 					positionSecondButtons(true, tvButton);
-					
-					Log.v(LOGTAG, "Second Button's Disappear Animation onAnimationEnd");
-					
+
+					tvButton.clearAnimation();
+					setElemPosSize(tvButton, 0,   0, 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y  - BUTTON_BORDER_WIDTH);
+
+//					Log.v(LOGTAG, "Second Button's Disappear Animation onAnimationEnd");
+
 					//third buttons appears! animation with 0.5s duration
-					m_firstButton.setAlpha(1);
+					m_firstButton.setVisibility(View.VISIBLE);
 					AnimationSet animSetNew = null;
 					
 					for(int i = 0; i < m_thirdButtons.size(); i++)
 					{
 						View b = m_thirdButtons.get(i);
-			        	b.setAlpha(1.0f);
+//						b.setAlpha(1);
+						b.setVisibility(View.VISIBLE);
+						b.invalidate();
 			        	Point point = getElemPos(b);
-						animSetNew = addMoveResizeAnimation(500, 	b, 	0.0f * m_ratioTo320X,  point.y - (BUTTON_HIDDEN_OFFSET - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y, 320f * m_ratioTo320X, 56.0f * m_ratioTo480Y,	true) ;
+						animSetNew = addMoveResizeAnimation(500, 	b, 	0,  point.y - (BUTTON_HIDDEN_OFFSET - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	true) ;
 						animSetNew.startNow();
 					}
 					
-					animSetNew.setAnimationListener(new AnimationListener()
+					if(animSetNew != null)
 					{
-
-						@Override
-						public void onAnimationEnd(Animation animation) {
-							positionThirdButtons(false, null);
+						animSetNew.setAnimationListener(new AnimationListener()
+						{
+	
+							@Override
+							public void onAnimationEnd(Animation animation) {
+								positionThirdButtons(false, null);
+								
+								scrollerContentResize((m_thirdButtons.size() * BUTTON_THIRD_HEIGHT + BUTTON_HEIGHT_FIXED) * m_ratioTo480Y);
+								
+								m_rlContent.invalidate();
+								m_bAnimating = false;
+							}
+	
+							@Override
+							public void onAnimationRepeat(Animation animation) {
+							}
+	
+							@Override
+							public void onAnimationStart(Animation animation) {
+							}
+							
 						}
-
-						@Override
-						public void onAnimationRepeat(Animation animation) {
-						}
-
-						@Override
-						public void onAnimationStart(Animation animation) {
-						}
-						
+						);
 					}
-					);
 				}
 
 				@Override
@@ -815,60 +1018,310 @@ public class OccasionActivity  extends Activity {
 		}
 		else if( m_level == 3 || m_level == 4)
 		{
+			
+			m_bAnimating = true;
+			
 			popOccasion();
-			if(m_plRow >= 0)
-			{
-				
-				//stop();
-			}
+			m_lvPlaylists.stopMedia();
+			m_lvPlaylists.removeAll();
+			m_lvPlaylists.setVisibility(View.INVISIBLE);
 			
 			//animation starts 0.5s
-			for(int i = 0; i < m_thirdButtons.size(); i++)
-	        {
-	        	View b = m_thirdButtons.get(i);
-	        	b.setAlpha(0.0f);
-	        	Point point = getElemPos(b);
-	        	setElemPosSize(b, 0.0f * m_ratioTo320X,  point.y + 346 * m_ratioTo480Y, 320f * m_minRatio, 56.0f * m_minRatio) ;
-	        }
+			AnimationSet animSet = null;
 			
-			//completed, starts this
+			
+			//hide third buttons.
 			for(int i = 0; i < m_thirdButtons.size(); i++)
-	        {
+			{
 				View b = m_thirdButtons.get(i);
-				m_rlContent.removeView(b);
-	        }
+//				b.setAlpha(1); 
+				b.setVisibility(View.VISIBLE);
+				b.invalidate();
+				
+	        	Point point = getElemPos(b);
+	        	animSet = addMoveResizeAnimation(500, 	b, 	0,  					point.y + (BUTTON_HIDDEN_OFFSET - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y, 
+	        												320f * m_ratioTo320X, 	BUTTON_THIRD_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
+	        	animSet.startNow();
+			}
 			
-			//starts anim
-			for(int i = 0; i < m_secondButtons.size(); i++)
-	        {
-				View b = m_secondButtons.get(i);
-				Point point = getElemPos(b);
-	        	setElemPosSize(b, 0.0f * m_ratioTo320X,  point.y - 381 * m_ratioTo480Y, 320f * m_minRatio, 129.0f * m_minRatio) ;
-	        	b.setAlpha(1.0f);
-	        }
+			animSet.setAnimationListener(new AnimationListener()
+			{
+
+				@Override
+				public void onAnimationEnd(Animation animation) {
+
+					//completed, starts this
+					//remove third buttons
+					for(int i = 0; i < m_thirdButtons.size(); i++)
+			        {
+						View b = m_thirdButtons.get(i);
+						m_rlScrollContent.removeView(b);
+			        }
+					m_thirdButtons.clear();
+					
+					
+					AnimationSet animSetNew = null;
+					//second buttons animate to appear
+			        for(int i = 0; i < m_secondButtons.size(); i++)
+					{
+		        		View b = m_secondButtons.get(i);
+		        		
+//		        		b.setAlpha(1); 
+		        		b.setVisibility(View.VISIBLE);
+		        		b.invalidate();
+		        		
+		        		animSetNew = addMoveResizeAnimation(500, b,	0,  (int)(i * BUTTON_SECOND_HEIGHT * m_ratioTo480Y) , 
+		        				320f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	true) ;
+		        		animSetNew.startNow();
+					}
+			        
+			        ((TextView)button).setTextSize(100 * m_textRatio);
+			        
+			        animSetNew.setAnimationListener(new AnimationListener()
+					{
+						@Override
+						public void onAnimationEnd(Animation animation) {
+							positionSecondButtons(false, null);
+							
+							scrollerContentResize((m_secondButtons.size() * BUTTON_SECOND_HEIGHT) * m_ratioTo480Y);
+							
+							m_rlContent.invalidate();
+							m_bAnimating = false;
+						}
+
+						@Override
+						public void onAnimationRepeat(Animation animation) {
+						}
+
+						@Override
+						public void onAnimationStart(Animation animation) {
+						}
+					});
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationStart(Animation animation) {
+				}
+				
+			});
 			
-			((TextView)button).setTextSize(100);
-			//table.reloadData();
-			m_thirdButtons.clear();
 			m_level = 2;
 		}
 	}
+    
 	
-	private void setElemSize(View view, int width,int height)
-    {
-    	RelativeLayout.LayoutParams paramold = (RelativeLayout.LayoutParams)view.getLayoutParams();
-    	paramold.width = width;
-    	paramold.height = height;
-    	view.setLayoutParams(paramold);
-    }
-    
-    private void setElemPos(View view, int left, int top)
-    {
-    	RelativeLayout.LayoutParams paramold = (RelativeLayout.LayoutParams)view.getLayoutParams();
-    	paramold.setMargins(left - paramold.width / 2, top - paramold.height / 2, 0, 0);
-    	view.setLayoutParams(paramold);
-    }
-    
+	public void updateSongsListView()
+	{
+		if(m_level == 4)
+		{
+			m_lvPlaylists.setVisibility(View.VISIBLE);
+			m_lvPlaylists.showPlaylists(m_displayedPlaylists, true);
+		}
+	}
+	
+	
+	private void fetchPlaylistContent(Playlist pl )
+	{
+		
+		Producer getPlaylist = RFAPI.getSingleTone().getPlaylist(pl.m_id);
+		
+		if(getPlaylist == null)
+    		return;
+		
+		getPlaylist.m_delegate = new ProducerDelegate()
+    	{
+			@Override
+			public void onResult(Object obj) {
+				m_displayedPlaylists.clear();
+				
+				Playlist retPl = (Playlist)obj;
+				m_displayedPlaylists.add(retPl);
+				
+				updateSongsListView();
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			}
+
+			@Override
+			public void onError() {
+				m_displayedPlaylists.clear();
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			}
+    	};
+    	getPlaylist.run();
+    	
+		
+	}
+	private void fetchPlaylistsForOccasion(Occasion occasion)
+	{
+		Producer getOccasion = RFAPI.getSingleTone().getOccasions(occasion.m_id);
+		
+		if(getOccasion == null)
+    		return;
+		
+		getOccasion.m_delegate = new ProducerDelegate()
+    	{
+			@Override
+			public void onResult(Object obj) {
+				
+				m_displayedOccasion = (Occasion) obj;
+				if(m_displayedOccasion != null)
+				{
+					Log.v(LOGTAG, "fetchPlaylistsForOccasion getOccasion resulted");
+					
+					ArrayList<Playlist> arrayPlaylist = m_displayedOccasion.m_playlists;
+					m_displayedPlaylists = arrayPlaylist;
+					
+					if(m_displayedPlaylists != null && m_level == 4)
+					{
+						fetchPlaylistContent(m_displayedPlaylists.get(0));
+					}
+				}
+			}
+
+			@Override
+			public void onError() {
+				m_pbActivityIndicator.setVisibility(View.GONE);
+			}
+    	};
+    	getOccasion.run(); 
+	}
+	
+	private void loadPlaylist(View button)
+	{
+		
+		int buttonTag = 0;
+		
+		m_rlContent.invalidate();
+		
+		for(int i = 0; i < m_thirdButtons.size(); i++)
+		{
+			if(button == m_thirdButtons.get(i))
+			{
+				buttonTag = i;
+				break;
+			}
+		}
+
+		m_bAnimating = true;
+		
+		if(m_level == 3)
+		{
+			
+			Occasion parent = m_occasionStack.get(1);
+			Occasion child = parent.m_children.get(buttonTag);
+			
+			fetchPlaylistsForOccasion(child);
+			
+			final TextView tvButton = ((TextView)button);
+			
+			//third buttons animate to disappear
+	        
+			//leaves selected third button.
+	        m_thirdRect = getElemPosSize(tvButton);
+	        tvButton.setTextSize(32.0f * m_textRatio);
+	        AnimationSet animSet = addMoveResizeAnimation(500, 	tvButton, 0,  BUTTON_HEIGHT_FIXED * m_ratioTo480Y , 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y  - BUTTON_BORDER_WIDTH, true) ;
+			animSet.startNow();
+			
+			//let the rest of buttons disappear!
+	        for(int i = 0; i < m_thirdButtons.size(); i++)
+			{
+	        	if(i != buttonTag)
+	        	{
+	        		View b = m_thirdButtons.get(i);
+	        		Point point = getElemPos(b);
+	        		addMoveResizeAnimation(500, b,	0, point.y + BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
+	        	}
+			}
+	        
+	        animSet.setAnimationListener(new AnimationListener()
+			{
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					
+					positionThirdButtons(true, tvButton);
+
+					tvButton.clearAnimation();
+					setElemPosSize(tvButton, 0,   BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y  - BUTTON_BORDER_WIDTH);
+					
+					scrollerContentResize((BUTTON_HEIGHT_FIXED * 2) * m_ratioTo480Y);
+					
+					m_rlContent.invalidate();
+					m_bAnimating = false;
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationStart(Animation animation) {
+				}
+			});
+	        
+	        m_level = 4;
+	        m_svScroller.setEnabled(false);
+		}
+		else
+		{
+			
+			m_lvPlaylists.stopMedia();
+			m_lvPlaylists.setVisibility(View.INVISIBLE);
+			
+			final TextView tvButton = ((TextView)button);
+			
+	        tvButton.setTextSize(80.0f * m_textRatio);
+	        AnimationSet animSet = addMoveResizeAnimation(500, 	tvButton, 	m_thirdRect.left,  		m_thirdRect.top , 
+	        																320f * m_ratioTo320X, 	BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH, true) ;
+			animSet.startNow();
+			
+			//let the rest of buttons disappear!
+	        for(int i = 0; i < m_thirdButtons.size(); i++)
+			{
+	        	if(i != buttonTag)
+	        	{
+	        		View b = m_thirdButtons.get(i);
+	        		Point point = getElemPos(b);
+	        		addMoveResizeAnimation(500, b,	0, point.y - BUTTON_HIDDEN_OFFSET * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH,	false) ;
+	        	}
+			}
+	        
+	        
+	        animSet.setAnimationListener(new AnimationListener()
+			{
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					
+					positionThirdButtons(false, null);
+
+					tvButton.clearAnimation();
+					setElemPosSize(tvButton, m_thirdRect.left,  m_thirdRect.top , 320f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH);
+					
+					scrollerContentResize((BUTTON_HEIGHT_FIXED + m_thirdButtons.size() * BUTTON_THIRD_HEIGHT) * m_ratioTo480Y);
+					
+					m_displayedOccasion = null;
+					m_displayedPlaylists = null;
+					
+					m_rlContent.invalidate();
+					m_bAnimating = false;
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationStart(Animation animation) {
+				}
+			});
+	        
+	        m_level = 3;
+		}
+	}
+	
     private Rect getElemPosSize(View view)
     {
     	Rect rt = new Rect();
@@ -895,7 +1348,8 @@ public class OccasionActivity  extends Activity {
     	RelativeLayout.LayoutParams paramold = (RelativeLayout.LayoutParams)view.getLayoutParams();
     	paramold.width = (int)width;
     	paramold.height = (int)height;
-    	paramold.setMargins((int)left, (int)top , 0, 0);
+    	paramold.leftMargin = (int)left;
+    	paramold.topMargin = (int)top;
     	view.setLayoutParams(paramold);
     }
     
@@ -911,10 +1365,13 @@ public class OccasionActivity  extends Activity {
 		m_ivBtnNavPlaylist = (ImageView)findViewById(R.id.ivNavBtnPlaylist);
 		m_ivBtnNavRemove = (ImageView)findViewById(R.id.ivNavBtnRemoveAll);
 		
+		m_ivBtnNavDone.setOnClickListener(m_OnNavButtonClickListener);
+		m_ivBtnNavPlaylist.setOnClickListener(m_OnNavButtonClickListener);
+		m_ivBtnNavRemove.setOnClickListener(m_OnNavButtonClickListener);
 		
 		// indicator
 		m_pbActivityIndicator = (ProgressBar)findViewById(R.id.pbActivityIndicator);
-		m_pbActivityIndicator.setVisibility(View.VISIBLE);
+		m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 		
 		// home buttons
 		if(m_ivBtnMood == null){
@@ -962,19 +1419,33 @@ public class OccasionActivity  extends Activity {
 		//first button
 		if(m_firstButton == null)
         {
-	        m_firstButton = new TextView(this);
-	        m_firstButton.setAlpha(0);
+	        m_firstButton = new RFTextView(this);
+	        m_firstButton.setVisibility(View.INVISIBLE);
 	        m_firstButton.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
 	        m_rlContent.addView(m_firstButton);
 	        m_firstButton.setOnClickListener(m_OnFirstButtonClickListener);
+	        
 	    }
 		
 		//scroller
-		if(m_rlScroller == null)
+		if(m_svScroller == null)
 		{
-			m_rlScroller = new RelativeLayout(this);
-			m_rlContent.addView(m_rlScroller);
+			m_svScroller = new RFScrollView(this);
+			m_rlContent.addView(m_svScroller);
+			m_svScroller.setVisibility(View.INVISIBLE);
 		}
+		if(m_rlScrollContent == null)
+		{
+			m_rlScrollContent = new RelativeLayout(this);
+			m_svScroller.addView(m_rlScrollContent);
+		}
+		if(m_lvPlaylists == null)
+		{
+			m_lvPlaylists = new SongListView(this);
+			m_rlContent.addView(m_lvPlaylists);
+			m_lvPlaylists.setVisibility(View.INVISIBLE);
+		}
+		
 		final ViewTreeObserver vto = m_rlContent.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
@@ -985,6 +1456,7 @@ public class OccasionActivity  extends Activity {
             	m_ratioTo480Y = (float)m_contentHeight / 416.0f;
             	
             	m_minRatio = Math.min(m_ratioTo320X, m_ratioTo480Y);
+            	m_textRatio =  (float)m_contentWidth / 800.0f;
             	
             	int buttonSize = (int)(115 * m_minRatio);
             	
@@ -996,16 +1468,22 @@ public class OccasionActivity  extends Activity {
             	setElemPosSize(m_ivBtnSports, 		(int)( 29 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), buttonSize, buttonSize);
             	setElemPosSize(m_ivBtnHoliday, 		(int)(175 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), buttonSize, buttonSize);
             	
-            	//first button
-            	setElemPosSize(m_firstButton, 		(int)(  0 * m_ratioTo320X), 	(int)(  0 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) );
-            	m_firstButton.setTextSize(32 ); //setTextSize(32 * m_minRatio);
+            	// first button
+            	setElemPosSize(m_firstButton, 		(int)(  0 * m_ratioTo320X), 	(int)(  0 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
+            	m_firstButton.setTextSize(32 * m_textRatio);
             	
-            	//scroller position
-            	setElemPosSize(m_rlScroller, 		(int)(  0 * m_ratioTo320X), 	(int)(  35 * m_ratioTo480Y),  m_contentWidth, m_contentHeight - (int)(35 * m_ratioTo480Y) );
+            	// scroller position
+            	setElemPosSize(m_svScroller, 		(int)(  0 * m_ratioTo320X), 	(int)(  35 * m_ratioTo480Y),  m_contentWidth, m_contentHeight - (int)(35 * m_ratioTo480Y) );
             	
-            	m_rlContent.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            	// songlistview
+            	setElemPosSize(m_lvPlaylists, 		(int)(  0 * m_ratioTo320X), 	(int)(  70 * m_ratioTo480Y),  m_contentWidth, m_contentHeight - (int)(70 * m_ratioTo480Y) );
+            	
             	
             	setButtonsHidden(true);
+
+//            	m_pbActivityIndicator.bringToFront();
+            	
+            	m_rlContent.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
         
@@ -1016,18 +1494,33 @@ public class OccasionActivity  extends Activity {
 	
 	private void setButtonsHidden(boolean hidden)
 	{
+//		float alpha = 0;
+//		if(hidden == false)
+//			alpha = 1;
+//		else if(hidden == true)
+//			alpha = 0;
+		
+		
+//		m_ivBtnMood.setAlpha(alpha);
+//		m_ivBtnCelebration.setAlpha(alpha);
+//		m_ivBtnTheme.setAlpha(alpha);
+//		m_ivBtnEvent.setAlpha(alpha);
+//		m_ivBtnSports.setAlpha(alpha);
+//		m_ivBtnHoliday.setAlpha(alpha);
+		
 		int idx;
 		if(hidden == false)
 			idx = View.VISIBLE;
 		else
 			idx = View.INVISIBLE;
-			
+		
 		m_ivBtnMood.setVisibility(idx);
 		m_ivBtnCelebration.setVisibility(idx);
 		m_ivBtnTheme.setVisibility(idx);
 		m_ivBtnEvent.setVisibility(idx);
 		m_ivBtnSports.setVisibility(idx);
 		m_ivBtnHoliday.setVisibility(idx);
+		
 	}
 	
 	
@@ -1042,7 +1535,7 @@ public class OccasionActivity  extends Activity {
 				{
 					public void run()
 					{
-						updateOccasionImage();
+						updateOccasionImage(false);
 					}
 				});
 				
@@ -1055,24 +1548,59 @@ public class OccasionActivity  extends Activity {
 		}
 	});
 	
+	protected OnClickListener m_OnNavButtonClickListener = new OnClickListener()
+    {
+		@Override
+		public void onClick(View v) {
+			//if(m_bAnimating == false && v.getAlpha() == 1)
+			if(m_bAnimating == false)
+			{
+				if(v == m_ivBtnNavDone)
+				{
+					finish();
+				}
+				else if (v == m_ivBtnNavPlaylist)
+				{
+					Intent intent = new Intent(OccasionActivity.this, PlaylistActivity.class);
+					startActivity(intent);
+				}
+				else if (v == m_ivBtnNavRemove)
+				{
+					
+				}
+			}
+		}
+    };
+    
+    
 	protected OnClickListener m_OnFirstButtonClickListener = new OnClickListener()
     {
 		@Override
 		public void onClick(View v) {
-			if(v == m_firstButton)
+//			if(m_bAnimating == false && v.getAlpha() == 1)
+			if(m_bAnimating == false)
 			{
-				animateToHomeScreen();
+				if(v == m_firstButton)
+				{
+					animateToHomeScreen();
+				}
+				else
+				{
+					loadSecondLevel(v);
+				}
 			}
-			else
-				loadSecondLevel(v);
 		}
     };
     
 	protected OnClickListener m_OnSecondButtonClickListener = new OnClickListener()
     {
 		@Override
-		public void onClick(View v) {			
-			showThirdLevel(v);
+		public void onClick(View v) {
+//			if(m_bAnimating == false && v.getAlpha() == 1)
+			if(m_bAnimating == false)
+			{
+				showThirdLevel(v);
+			}
 		}
     };
     
@@ -1081,14 +1609,41 @@ public class OccasionActivity  extends Activity {
 		@Override
 		public void onClick(View v) {
 			Log.v(LOGTAG,"m_OnThirdButtonClickListener called");
-			//loadPlaylist(v);
+			loadPlaylist(v);
 		}
     };
 
     @Override
+    protected void onPause()
+    {
+    	super.onPause();
+    	if(this.m_lvPlaylists != null)
+    	{
+    		this.m_lvPlaylists.pauseMedia();
+    	}
+    }
+    
+    @Override
+    protected void onResume()
+    {
+    	super.onResume();
+    	if(this.m_lvPlaylists != null)
+    	{
+    		this.m_lvPlaylists.updateContent();
+    		this.m_lvPlaylists.resumeMedia();
+    	}
+    }
+    
+    @Override
     protected void onDestroy()
     {
     	super.onDestroy();
+    	if(m_lvPlaylists != null)
+    	{
+    		m_lvPlaylists.release();
+    	}
+    	recycleOccasionImages();
+    	
     	m_bRunning = false;
     	
     }
@@ -1102,4 +1657,62 @@ public class OccasionActivity  extends Activity {
     public static final int RFOccasionSports = 4;
     public static final int RFOccasionHoliday = 5;
     //};
+    
+    
+    public class MoveResizeAnimation extends Animation {
+        private View mView;
+        private float mToHeight;
+        private float mFromHeight;
+
+        private float mToWidth;
+        private float mFromWidth;
+
+        private float mToX;
+        private float mFromX;
+
+        private float mToY;
+        private float mFromY;
+
+        public MoveResizeAnimation(View v, int duration, 
+        		float fromWidth, float toWidth, float fromHeight, float toHeight,
+        		float fromX, float toX, float fromY, float toY) 
+        {
+            mToHeight = toHeight;
+            mToWidth = toWidth;
+            mFromHeight = fromHeight;
+            mFromWidth = fromWidth;
+            
+            mFromX = fromX;
+            mToX = toX;
+            
+            mFromY = fromY;
+            mToY = toY;
+            
+            mView = v;
+            setDuration(duration);
+        }
+
+        private float interpol(float from, float to, float interpol)
+        {
+        	return (to - from) * interpol + from;
+        }
+        
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            float height = interpol(mFromHeight, mToHeight, interpolatedTime);
+            float width = interpol(mFromWidth, mToWidth, interpolatedTime);
+
+            float x = interpol(mFromX, mToX, interpolatedTime);
+            float y = interpol(mFromY, mToY, interpolatedTime);
+            
+            RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams)mView.getLayoutParams();
+            p.height = (int) height;
+            p.width = (int) width;
+            p.leftMargin = (int)x;
+            p.topMargin = (int)y;
+            
+
+            mView.requestLayout();
+        }
+    }
 }

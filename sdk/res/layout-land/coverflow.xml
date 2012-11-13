@@ -1,0 +1,56 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/home_background"
+    android:orientation="vertical" >
+
+    <include layout="@layout/navigationbar" />
+
+    <RelativeLayout
+        android:id="@+id/rlCoverflowContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" >
+
+        <ProgressBar
+            android:id="@+id/pbActivityIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true" />
+
+        <com.rumblefish.friendlymusic.view.coverflow.CoverFlow
+            android:id="@+id/cfCoverflow"
+            xmlns:coverflow="http://schemas.android.com/apk/res/com.rumblefish.friendlymusic"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            coverflow:imageWidth="200dip" 
+            coverflow:imageHeight="200dip" 
+            coverflow:withReflection="true"
+			coverflow:imageReflectionRatio="0.3" 
+			coverflow:reflectionGap="2dip"  />
+
+        <TextView
+            android:id="@+id/tvSubTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:text="@string/coverflow_opening_sub"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/tvSubTitle"
+            android:layout_centerHorizontal="true"
+            android:text="@string/coverflow_opening"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+    </RelativeLayout>
+
+</LinearLayout>

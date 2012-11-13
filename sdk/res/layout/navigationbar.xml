@@ -1,9 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rlNavBar"
     android:layout_width="fill_parent"
-    android:layout_height="56dp"
+    android:layout_height="46dp"
     android:background="@drawable/navbar_back"
-    android:padding="8dp" >
+    android:padding="6dp" >
     
 	<ImageView
 		android:id="@+id/ivNavBtnDone"

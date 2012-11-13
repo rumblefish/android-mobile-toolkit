@@ -7,10 +7,11 @@
     <ImageView
         android:id="@+id/ivHomeHeader"
         android:layout_width="fill_parent"
-        android:layout_height="160dp"
+        android:layout_height="0dp"
         android:contentDescription="@string/home_headimage"
         android:scaleType="fitXY"
-        android:src="@drawable/homeheader" />
+        android:src="@drawable/homeheader"
+        android:layout_weight="1.0" />
 
     <RelativeLayout
         android:id = "@+id/rlMoodMap"

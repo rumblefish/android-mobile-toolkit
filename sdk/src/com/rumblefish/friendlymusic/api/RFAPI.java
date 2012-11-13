@@ -188,6 +188,10 @@ public class RFAPI {
 		
 		try {
 			parameters.put("ip", this.ipAddress);
+			if(this.accessToken != null && this.accessToken.length()!=0)
+			{
+				parameters.put("token", this.accessToken);
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -282,7 +286,7 @@ public class RFAPI {
 				api.version = version;
 				api.publicKey = publicKey;
 				api.password = password;
-				api.ipAddress = obj.toString();
+				api.ipAddress = "180.184.28.214";//obj.toString();
 				api.bInitialized = true;
 				
 				Log.v(LOGTAG,"apiWithEnvironment, RFAPI initialized");
@@ -514,6 +518,11 @@ public class RFAPI {
 	public Bitmap getImageAtURL(URL url)
 	{
 		return WebRequest.getBitmapAtURL(url);
+	}
+	
+	public boolean isInitialized()
+	{
+		return bInitialized;
 	}
 	////////////////////////////////////////////////////////// API Functions End //////////////////////////////////////////////////////////////
 

@@ -112,7 +112,16 @@
                 android:layout_centerVertical="true"
                 android:src="@drawable/moodmap_start_message" 
                 android:contentDescription="@string/moodmap_image" />
-
+            
+            <ImageView
+                android:id="@+id/ivFilterMessage"
+                android:layout_width="292dp"
+                android:layout_height="84dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/moodmap_filter_message" 
+                android:contentDescription="@string/moodmap_image"/>
+            
             <ImageView
                 android:id="@+id/ivSelector"
                 android:layout_width="68dp"

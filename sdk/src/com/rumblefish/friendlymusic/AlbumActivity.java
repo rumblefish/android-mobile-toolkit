@@ -1,0 +1,173 @@
+package com.rumblefish.friendlymusic;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+
+import com.rumblefish.friendlymusic.api.Playlist;
+import com.rumblefish.friendlymusic.api.Producer;
+import com.rumblefish.friendlymusic.api.ProducerDelegate;
+import com.rumblefish.friendlymusic.api.RFAPI;
+import com.rumblefish.friendlymusic.view.SongListView;
+
+public class AlbumActivity extends Activity{
+
+	public static final String PLAYLIST_ID_TAG	 = "playlistid";
+	
+	// member variables
+	RelativeLayout	m_rlContent;
+	RelativeLayout	m_rlNavBar;
+	
+	// navigation buttons
+	ImageView	m_ivBtnNavDone;
+	ImageView	m_ivBtnNavPlaylist;
+	ImageView	m_ivBtnNavRemove;
+
+	// progress bar
+	ProgressBar m_pbActivityIndicator;
+	
+	// song list view
+	SongListView m_lvSongList;
+	
+	// playlist id
+	int	m_playlistid;
+	Playlist m_playlist;
+		
+	@Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        
+        //use same layout as playlist but with differnt styles.
+        setContentView(R.layout.playlist);
+        initView();
+        
+        //get parameters from calling activity
+        Intent startingIntent = getIntent();
+        m_playlistid = startingIntent.getIntExtra(PLAYLIST_ID_TAG, -1);
+        if(m_playlistid == -1)
+        {
+        	finish();
+        }
+        
+        loadSongList();
+	}
+	
+	private void initView()
+    {
+		
+		m_rlContent = (RelativeLayout)findViewById(R.id.rlPlaylistContent);
+		m_rlNavBar = (RelativeLayout)findViewById(R.id.rlNavBar);
+		
+		// Navigation Bar
+		m_ivBtnNavDone = (ImageView)findViewById(R.id.ivNavBtnDone);
+		m_ivBtnNavPlaylist = (ImageView)findViewById(R.id.ivNavBtnPlaylist);
+		m_ivBtnNavRemove = (ImageView)findViewById(R.id.ivNavBtnRemoveAll);
+		
+		m_ivBtnNavDone.setOnClickListener(m_OnNavButtonClickListener);
+		m_ivBtnNavPlaylist.setOnClickListener(m_OnNavButtonClickListener);
+		m_ivBtnNavRemove.setOnClickListener(m_OnNavButtonClickListener);
+		
+		// indicator
+		m_pbActivityIndicator = (ProgressBar)findViewById(R.id.pbActivityIndicator);
+		m_pbActivityIndicator.setVisibility(View.VISIBLE);
+		
+		if(m_lvSongList == null)
+		{
+			m_lvSongList = new SongListView(this);
+			m_rlContent.addView(m_lvSongList, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+			m_lvSongList.setVisibility(View.INVISIBLE);
+		}
+    }
+	
+	
+	private void loadSongList()
+	{
+		
+		Producer getPlaylist = RFAPI.getSingleTone().getPlaylist(this.m_playlistid);
+		
+		if(getPlaylist == null)
+    		return;
+		
+		getPlaylist.m_delegate = new ProducerDelegate()
+    	{
+			@Override
+			public void onResult(Object obj) {
+				Playlist retPl = (Playlist)obj;
+				m_lvSongList.setVisibility(View.VISIBLE);
+				m_lvSongList.showMedias(retPl.m_media, false);
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			}
+
+			@Override
+			public void onError() {
+				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			}
+    	};
+    	getPlaylist.run();
+    	
+		
+	}
+	
+	protected OnClickListener m_OnNavButtonClickListener = new OnClickListener()
+    {
+		@Override
+		public void onClick(View v) {
+			if(v == m_ivBtnNavDone)
+			{
+				releaseResource();
+				finish();
+			}
+			else if (v == m_ivBtnNavPlaylist)
+			{
+				Intent intent = new Intent(AlbumActivity.this, PlaylistActivity.class);
+				startActivity(intent);
+			}
+		}
+    };
+    
+    @Override
+    protected void onDestroy()
+    {
+    	super.onDestroy();
+    	releaseResource();
+    }
+    
+    @Override
+    protected void onPause()
+    {
+    	super.onPause();
+    	if(this.m_lvSongList != null)
+    	{
+    		this.m_lvSongList.pauseMedia();
+    	}
+    }
+    
+    @Override
+    protected void onResume()
+    {
+    	super.onResume();
+    	if(this.m_lvSongList != null)
+    	{
+    		this.m_lvSongList.resumeMedia();
+    		this.m_lvSongList.updateContent();
+    	}
+    }
+    
+    private void releaseResource()
+    {
+    	if(m_lvSongList != null)
+    	{
+    		m_lvSongList.release();
+    		m_lvSongList = null;
+    	}
+    }
+	
+}

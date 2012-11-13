@@ -1,22 +1,14 @@
 package com.rumblefish.friendlymusic;
 
+import java.io.IOException;
 import java.util.ArrayList;
-
-import com.rumblefish.friendlymusic.api.LocalPlaylist;
-import com.rumblefish.friendlymusic.api.Media;
-import com.rumblefish.friendlymusic.api.Playlist;
-import com.rumblefish.friendlymusic.api.Producer;
-import com.rumblefish.friendlymusic.api.ProducerDelegate;
-import com.rumblefish.friendlymusic.api.RFAPI;
-import com.rumblefish.friendlymusic.api.RFAPI.RFAPIEnv;
-import com.rumblefish.friendlymusic.api.StaticResources;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
@@ -33,14 +25,19 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.Window;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -49,6 +46,16 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.rumblefish.friendlymusic.api.LocalPlaylist;
+import com.rumblefish.friendlymusic.api.Media;
+import com.rumblefish.friendlymusic.api.Playlist;
+import com.rumblefish.friendlymusic.api.Producer;
+import com.rumblefish.friendlymusic.api.ProducerDelegate;
+import com.rumblefish.friendlymusic.api.RFAPI;
+import com.rumblefish.friendlymusic.api.StaticResources;
+import com.rumblefish.friendlymusic.mediaplayer.StreamingMediaPlayer;
 
 public class MoodMap extends Activity implements OnTouchListener{
 
@@ -74,6 +81,7 @@ public class MoodMap extends Activity implements OnTouchListener{
 	ImageView	m_ivCrosshairs;
 	ImageView	m_ivSelector;
 	ImageView	m_ivMessage;
+	ImageView	m_ivFilterMessage;
 	
 	ListView		m_lvSongs;
 	ProgressBar		m_pbActivityIndicator;
@@ -91,7 +99,8 @@ public class MoodMap extends Activity implements OnTouchListener{
 	Integer m_selectedColor;
 	Point m_crosshairPos;
 	
-	MediaPlayer m_mediaPlayer = null;
+	//MediaPlayer m_mediaPlayer = null;
+	StreamingMediaPlayer m_mediaPlayer = null;
 	
 	Playlist m_playlist;
 	
@@ -124,13 +133,7 @@ public class MoodMap extends Activity implements OnTouchListener{
         
         setContentView(R.layout.moodmap);
         
-        initView();
-        
-        //configures rumble environment
-        RFAPI.rumbleWithEnvironment(RFAPIEnv.RFAPIEnvProduction, "PUBLIC_KEY", "PASSWORD");
-        LocalPlaylist.initPlaylist(this);
-        LocalPlaylist.sharedPlaylist().readPlaylist();
-        
+        initView();        
         
         //init variables
         m_adjacentColors = new ArrayList<Integer>();
@@ -160,8 +163,11 @@ public class MoodMap extends Activity implements OnTouchListener{
         else
         {
         	m_ivMessage.setVisibility(View.VISIBLE);
+        	m_ivMessage.startAnimation(m_animFadeIn);
         	SettingsUtils.setBoolForKey(this, "fmisused", true);
         }
+        
+        m_ivFilterMessage.setVisibility(View.INVISIBLE);
         
         //audio session
         //
@@ -177,11 +183,14 @@ public class MoodMap extends Activity implements OnTouchListener{
         if(StaticResources.m_mediaPlayer != null)
         	m_mediaPlayer = StaticResources.m_mediaPlayer;
         else
-        	m_mediaPlayer = new MediaPlayer();
+        {
+        	//m_mediaPlayer = new MediaPlayer();
+        	m_mediaPlayer = new StreamingMediaPlayer(this, m_mpCompletionListener, m_mpBufferingUpdateListener,  m_mpErrorListener);
+        }
         
-        m_mediaPlayer.setOnCompletionListener(m_mpCompletionListener);
-        m_mediaPlayer.setOnBufferingUpdateListener(m_mpBufferingUpdateListener);
-        m_mediaPlayer.setOnErrorListener(m_mpErrorListener);
+//        m_mediaPlayer.setOnCompletionListener(m_mpCompletionListener);
+//        m_mediaPlayer.setOnBufferingUpdateListener(m_mpBufferingUpdateListener);
+//        m_mediaPlayer.setOnErrorListener(m_mpErrorListener);
         
         if(StaticResources.m_playlist != null)
         {
@@ -233,6 +242,7 @@ public class MoodMap extends Activity implements OnTouchListener{
     	m_ivCrosshairs 	= (ImageView)findViewById(R.id.ivCrosshairs);
     	m_ivSelector 	= (ImageView)findViewById(R.id.ivSelector);
     	m_ivMessage 	= (ImageView)findViewById(R.id.ivMessage);
+    	m_ivFilterMessage 	= (ImageView)findViewById(R.id.ivFilterMessage);
     	
     	
     	m_lvSongs 	= (ListView)findViewById(R.id.lvSongs);
@@ -271,6 +281,7 @@ public class MoodMap extends Activity implements OnTouchListener{
             	setMoodMapElemSize(m_ivCrosshairs,  	(int)(407 * ratioTo480),  (int)(407 * ratioTo480));
             	setMoodMapElemSize(m_ivSelector,  		(int)(68 * ratioTo480),  (int)(68 * ratioTo480));
             	setMoodMapElemSize(m_ivMessage,  		(int)(292 * ratioTo480),  (int)(84 * ratioTo480));
+            	setMoodMapElemSize(m_ivFilterMessage,  		(int)(292 * ratioTo480),  (int)(84 * ratioTo480));
             }
         });
         
@@ -355,8 +366,8 @@ public class MoodMap extends Activity implements OnTouchListener{
 			    	m_ivRing.setVisibility(View.VISIBLE);
 			    	m_ivRing.startAnimation(m_animFadeIn);
 			    	
-			    	//m_ivGlow.setVisibility(View.VISIBLE);
-			    	//m_ivGlow.startAnimation(m_animFadeIn);
+			    	m_ivGlow.setVisibility(View.VISIBLE);
+			    	m_ivGlow.startAnimation(m_animFadeIn);
 			    	
 			    	colorOfPoint(ratX, ratY);
 			    	ringImageByFillingColor(m_selectedColor);
@@ -379,7 +390,7 @@ public class MoodMap extends Activity implements OnTouchListener{
 				m_crosshairPos.y = (int)curY;
 				m_ivRing.setVisibility(View.INVISIBLE);
 		    	m_ivRing.startAnimation(m_animFadeOut);
-		    	//m_ivGlow.startAnimation(m_animFadeIn);
+		    	m_ivGlow.startAnimation(m_animFadeIn);
 		    	d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
 			    if( d <= 121.0f)
 			    {
@@ -494,6 +505,28 @@ public class MoodMap extends Activity implements OnTouchListener{
 	}
     
     @Override
+    protected void onResume()
+    {
+    	super.onResume();
+    	if(this.m_lvSongsAdapter != null)
+    		this.m_lvSongsAdapter.notifyDataSetChanged();
+    	this.updatePlaylistBtn();
+    	
+    	if(m_mediaPlayer != null)
+    		m_mediaPlayer.start();
+    	
+    }
+    @Override
+    protected void onPause()
+    {
+    	super.onPause();
+    	if(m_mediaPlayer != null)
+    	{
+    		m_mediaPlayer.pause();
+    	}
+    }
+    
+    @Override
     protected void onDestroy()
     {
     	super.onDestroy();
@@ -518,51 +551,92 @@ public class MoodMap extends Activity implements OnTouchListener{
 			}
 			else if(v == m_ivBtnFilters)
 			{
-				if(m_ivBtnFilters.isSelected())
+				m_ivFilterMessage.setVisibility(View.VISIBLE);
+				
+				m_ivBtnFilters.setSelected(false);
+				Animation fadeIn = new AlphaAnimation(0, 1);
+				fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
+				fadeIn.setDuration(1000);
+
+				Animation fadeOut = new AlphaAnimation(1, 0);
+				fadeOut.setInterpolator(new AccelerateInterpolator()); //and this
+				fadeOut.setStartOffset(1000);
+				fadeOut.setDuration(1000);
+
+				AnimationSet animation = new AnimationSet(false); //change to false
+				animation.addAnimation(fadeIn);
+				animation.addAnimation(fadeOut);
+				animation.setAnimationListener(new AnimationListener()
+				{
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						m_ivFilterMessage.setVisibility(View.INVISIBLE);
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
+				});
+				m_ivFilterMessage.setAnimation(animation);
+				
+				/*if(m_ivBtnFilters.isSelected())
 				{
 					m_ivBtnFilters.setSelected(false);
 				}
 				else
-					m_ivBtnFilters.setSelected(true);
+					m_ivBtnFilters.setSelected(true);*/
 				
 			}
 			else if(v == m_ivBtnPlaylist)
 			{
 				//launch playlist activity
+				Intent intent = new Intent(MoodMap.this, PlaylistActivity.class);
+				startActivity(intent);
 			}
 		}
     };
     
     
-    protected void setItemStatus(View view, ItemStatus status)
+    protected void setItemStatus(final View view, final ItemStatus status)
     {
-    	if(view != null)
-    	{
-    		View medialayout = view;
-	        
-	        TextView tvIndexLabel = (TextView)medialayout.findViewById(R.id.tvIndexLabel);
-	        ProgressBar pbSongPB = (ProgressBar)medialayout.findViewById(R.id.pbSongProgressBar);
-	        ImageView ivBtnStop = (ImageView)medialayout.findViewById(R.id.ivBtnStop);
-	        
-	        if(status == ItemStatus.NORMAL)
-	        {
-	        	tvIndexLabel.setVisibility(View.VISIBLE);
-	        	pbSongPB.setVisibility(View.INVISIBLE);
-	        	ivBtnStop.setVisibility(View.INVISIBLE);
-	        }
-	        else if(status == ItemStatus.PLAYING)
-	        {
-	        	tvIndexLabel.setVisibility(View.INVISIBLE);
-	        	pbSongPB.setVisibility(View.INVISIBLE);
-	        	ivBtnStop.setVisibility(View.VISIBLE);
-	        }
-	        else if(status == ItemStatus.DOWNLOADING)
-	        {
-	        	tvIndexLabel.setVisibility(View.INVISIBLE);
-	        	pbSongPB.setVisibility(View.VISIBLE);
-	        	ivBtnStop.setVisibility(View.INVISIBLE);
-	        }
-    	}
+    	MoodMap.this.runOnUiThread(new Runnable()
+		{
+			public void run()
+			{
+		    	if(view != null)
+		    	{
+		    		View medialayout = view;
+			        
+			        TextView tvIndexLabel = (TextView)medialayout.findViewById(R.id.tvIndexLabel);
+			        ProgressBar pbSongPB = (ProgressBar)medialayout.findViewById(R.id.pbSongProgressBar);
+			        ImageView ivBtnStop = (ImageView)medialayout.findViewById(R.id.ivBtnStop);
+			        
+			        if(status == ItemStatus.NORMAL)
+			        {
+			        	tvIndexLabel.setVisibility(View.VISIBLE);
+			        	pbSongPB.setVisibility(View.INVISIBLE);
+			        	ivBtnStop.setVisibility(View.INVISIBLE);
+			        }
+			        else if(status == ItemStatus.PLAYING)
+			        {
+			        	tvIndexLabel.setVisibility(View.INVISIBLE);
+			        	pbSongPB.setVisibility(View.INVISIBLE);
+			        	ivBtnStop.setVisibility(View.VISIBLE);
+			        }
+			        else if(status == ItemStatus.DOWNLOADING)
+			        {
+			        	tvIndexLabel.setVisibility(View.INVISIBLE);
+			        	pbSongPB.setVisibility(View.VISIBLE);
+			        	ivBtnStop.setVisibility(View.INVISIBLE);
+			        }
+		    	}
+			}
+		});
     }
     
     AdapterView.OnItemClickListener m_onItemClickListener = new AdapterView.OnItemClickListener() {
@@ -580,7 +654,7 @@ public class MoodMap extends Activity implements OnTouchListener{
 	        		}
 	        	}
 	        	
-	        	Media media = m_playlist.m_media.get(position);
+	        	final Media media = m_playlist.m_media.get(position);
 	        	stopMedia();
 	        	
 	        	setItemStatus(v, ItemStatus.DOWNLOADING);
@@ -589,12 +663,41 @@ public class MoodMap extends Activity implements OnTouchListener{
 		        m_selectedCellID = position;
 		        
 		        try {
-					m_mediaPlayer.setDataSource(media.m_previewURL.toString());
-					m_mediaPlayer.prepare();
-				} catch (Exception e) {
+					m_mediaPlayer.startStreaming(media.m_previewURL.toString());
+				} catch (IOException e) {
+					MoodMap.this.runOnUiThread(new Runnable()
+					{
+						public void run()
+						{
+							Toast.makeText(MoodMap.this, R.string.toast_media_url_invalid, Toast.LENGTH_SHORT).show();
+						}
+					}
+					);
 					e.printStackTrace();
 				}
 		        
+//		        Thread thread = new Thread( new Runnable() 
+//		        {
+//		        	public void run()
+//		        	{
+//				        try {
+//							m_mediaPlayer.setDataSource(media.m_previewURL.toString());
+//							m_mediaPlayer.prepare();
+//						} catch (Exception e) {
+//							
+//							MoodMap.this.runOnUiThread(new Runnable()
+//							{
+//								public void run()
+//								{
+//									Toast.makeText(MoodMap.this, R.string.toast_media_url_invalid, Toast.LENGTH_SHORT).show();
+//								}
+//							}
+//							);
+//							e.printStackTrace();
+//						}
+//		        	}
+//		        });
+//		        thread.start();
 		        
 	        }
         }
@@ -620,7 +723,6 @@ public class MoodMap extends Activity implements OnTouchListener{
 	        if(medialayout == null)
 	        {
 	        	medialayout = ((LayoutInflater)context.getSystemService("layout_inflater")).inflate(m_resourceId, null);
-	        	//medialayout.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.WRAP_CONTENT, 50));
 	        }
 	        
 	        final View finalMediaView = medialayout;
@@ -738,16 +840,25 @@ public class MoodMap extends Activity implements OnTouchListener{
     {
     	public void onBufferingUpdate(MediaPlayer mp, int percent) {
     		
-    		int nowPercent = (int)(((float)mp.getCurrentPosition()/mp.getDuration())*100);
-    		
-    		Log.v(LOGTAG, "onBufferingUpdate buffer percent = " + percent + "  nowPercent = " + nowPercent);
-    		
     		View medialayout = null;
     		if(m_selectedCellID >= m_lvSongs.getFirstVisiblePosition() && 
         			m_selectedCellID <= m_lvSongs.getLastVisiblePosition())
     		{
 				medialayout = m_lvSongs.getChildAt(m_selectedCellID - m_lvSongs.getFirstVisiblePosition());
     		}
+    		
+    		if(mp == null)
+    		{
+    			//now loading media
+    	        setItemStatus(medialayout, ItemStatus.DOWNLOADING);
+    	        return;
+    		}
+    		
+    		int nowPercent = (int)(((float)mp.getCurrentPosition()/mp.getDuration())*100);
+    		
+    		Log.v(LOGTAG, "onBufferingUpdate buffer percent = " + percent + "  nowPercent = " + nowPercent);
+    		
+    		
 	        
     		
     		if(percent < 100 && 
