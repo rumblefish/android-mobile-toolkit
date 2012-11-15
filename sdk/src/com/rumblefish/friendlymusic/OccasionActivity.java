@@ -496,8 +496,8 @@ public class OccasionActivity  extends Activity {
 			m_svScroller.setScrollingEnabled(true);
 		}
 		
-		setElemPosSize(m_lvPlaylists, 0, height + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320 * this.m_ratioTo320X, (480 - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y - height);
-//		setElemPosSize(m_pbActivityIndicator, 320 * this.m_ratioTo320X / 2 - m_pbActivityIndicator.getWidth(), height / 2 + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 
+		setElemPosSize(m_lvPlaylists, 0, height + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, m_contentWidth, (480 - BUTTON_HEIGHT_FIXED) * m_ratioTo480Y - height);
+//		setElemPosSize(m_pbActivityIndicator, m_contentWidth / 2 - m_pbActivityIndicator.getWidth(), height / 2 + BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 
 //												m_pbActivityIndicator.getWidth(), m_pbActivityIndicator.getHeight());
 		
 //		m_pbActivityIndicator.bringToFront();
@@ -623,28 +623,38 @@ public class OccasionActivity  extends Activity {
 		return newSet;
 	}
 	
+	
+	public float homeButtonPos[][] = new float[][]{
+			{29,  013, -117, -115},
+			{175, 013,  320, -115},
+			{29,  151, -117,  151},
+			{175, 151,  320,  151},
+			{29,  289, -117,  416},
+			{175, 289,  320,  416},
+	};
+	
 	public void positionFirstButtons(boolean hidden)
 	{
 		if(hidden == true)
 		{
-			setElemPosSize(m_ivBtnMood, 		-117.0f * m_ratioTo320X, -115.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
-			setElemPosSize(m_ivBtnCelebration, 	 320.0f * m_ratioTo320X, -115.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
-			setElemPosSize(m_ivBtnTheme, 		-117.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
-			setElemPosSize(m_ivBtnEvent, 		 320.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
-			setElemPosSize(m_ivBtnSports, 		-117.0f * m_ratioTo320X,  416.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
-			setElemPosSize(m_ivBtnHoliday,		 320.0f * m_ratioTo320X,  416.0f * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnMood, 		homeButtonPos[0][2] * m_ratioTo320X,  homeButtonPos[0][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnCelebration, 	homeButtonPos[1][2] * m_ratioTo320X,  homeButtonPos[1][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnTheme, 		homeButtonPos[2][2] * m_ratioTo320X,  homeButtonPos[2][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnEvent, 		homeButtonPos[3][2] * m_ratioTo320X,  homeButtonPos[3][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnSports, 		homeButtonPos[4][2] * m_ratioTo320X,  homeButtonPos[4][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
+			setElemPosSize(m_ivBtnHoliday,		homeButtonPos[5][2] * m_ratioTo320X,  homeButtonPos[5][3] * m_ratioTo480Y, 115.0f * m_minRatio, 115.0f * m_minRatio) ;
 			
 			setButtonsHidden(true);
 		}
 		else
 		{
 			// Occasion Buttons
-        	setElemPosSize(m_ivBtnMood, 		(int)( 29 * m_ratioTo320X), 	(int)(013 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
-        	setElemPosSize(m_ivBtnCelebration, 	(int)(175 * m_ratioTo320X), 	(int)(013 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
-        	setElemPosSize(m_ivBtnTheme, 		(int)( 29 * m_ratioTo320X), 	(int)(151 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
-        	setElemPosSize(m_ivBtnEvent, 		(int)(175 * m_ratioTo320X), 	(int)(151 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
-        	setElemPosSize(m_ivBtnSports, 		(int)( 29 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
-        	setElemPosSize(m_ivBtnHoliday, 		(int)(175 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnMood, 		(int)( homeButtonPos[0][0] * m_ratioTo320X), 	(int)(homeButtonPos[0][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnCelebration, 	(int)( homeButtonPos[1][0] * m_ratioTo320X), 	(int)(homeButtonPos[1][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnTheme, 		(int)( homeButtonPos[2][0] * m_ratioTo320X), 	(int)(homeButtonPos[2][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnEvent, 		(int)( homeButtonPos[3][0] * m_ratioTo320X), 	(int)(homeButtonPos[3][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnSports, 		(int)( homeButtonPos[4][0] * m_ratioTo320X), 	(int)(homeButtonPos[4][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
+        	setElemPosSize(m_ivBtnHoliday, 		(int)( homeButtonPos[5][0] * m_ratioTo320X), 	(int)(homeButtonPos[5][1] * m_ratioTo480Y), 115.0f * m_minRatio, 115.0f * m_minRatio);
         	
         	setButtonsHidden(false);
 		}
@@ -666,14 +676,14 @@ public class OccasionActivity  extends Activity {
 				continue;
 			if(hidden == true)
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(BUTTON_SECOND_HEIGHT * i * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH) ;
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(BUTTON_SECOND_HEIGHT * i * m_ratioTo480Y), m_contentWidth, BUTTON_SECOND_HEIGHT * m_ratioTo480Y - BUTTON_BORDER_WIDTH) ;
 //				button.setAlpha(0);
 				button.setVisibility(View.INVISIBLE);
 			}
 			else
 			{
 				
-				setElemPosSize(button,	0.0f * m_ratioTo320X, (int)(i * BUTTON_SECOND_HEIGHT) * m_ratioTo480Y, 320.0f * m_ratioTo320X, BUTTON_SECOND_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+				setElemPosSize(button,	0.0f * m_ratioTo320X, (int)(i * BUTTON_SECOND_HEIGHT) * m_ratioTo480Y, m_contentWidth, BUTTON_SECOND_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
 //				button.setAlpha(1); 
 				button.setVisibility(View.VISIBLE);
 			}
@@ -693,13 +703,13 @@ public class OccasionActivity  extends Activity {
 			
 			if(hidden == true)
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HIDDEN_OFFSET * m_ratioTo480Y + (int)(i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), m_contentWidth, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
 				button.setVisibility(View.INVISIBLE);
 //				button.setAlpha(0);
 			}
 			else
 			{
-				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y + (int)( i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), 320.0f * m_ratioTo320X, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
+				setElemPosSize(button,	0.0f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y + (int)( i * BUTTON_THIRD_HEIGHT * m_ratioTo480Y), m_contentWidth, BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH) ;
 				button.setVisibility(View.VISIBLE);
 //				button.setAlpha(1);
 			}
@@ -761,13 +771,13 @@ public class OccasionActivity  extends Activity {
 				
 				setButtonsHidden(false);
 				
-				addMoveResizeAnimation(		500, 	m_ivBtnMood, 		  29.0f * m_ratioTo320X,   13.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
-				addMoveResizeAnimation( 	500, 	m_ivBtnCelebration,	 175.0f * m_ratioTo320X,   13.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
-				addMoveResizeAnimation( 	500, 	m_ivBtnTheme, 		  29.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
-				addMoveResizeAnimation( 	500, 	m_ivBtnEvent, 		 175.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
-				addMoveResizeAnimation( 	500, 	m_ivBtnSports, 		  29.0f * m_ratioTo320X,  289.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation(		500, 	m_ivBtnMood, 		 homeButtonPos[0][0]  * m_ratioTo320X,  homeButtonPos[0][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation( 	500, 	m_ivBtnCelebration,	 homeButtonPos[1][0]  * m_ratioTo320X,  homeButtonPos[1][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation( 	500, 	m_ivBtnTheme, 		 homeButtonPos[2][0]  * m_ratioTo320X,  homeButtonPos[2][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation( 	500, 	m_ivBtnEvent, 		 homeButtonPos[3][0]  * m_ratioTo320X,  homeButtonPos[3][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation( 	500, 	m_ivBtnSports, 		 homeButtonPos[4][0]  * m_ratioTo320X,  homeButtonPos[4][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
 				animSetNew = 
-				addMoveResizeAnimation( 	500, 	m_ivBtnHoliday,		 175.0f * m_ratioTo320X,  289.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
+				addMoveResizeAnimation( 	500, 	m_ivBtnHoliday,		 homeButtonPos[5][0]  * m_ratioTo320X,  homeButtonPos[5][1]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	true) ;
 				
 				animSetNew.setAnimationListener(new AnimationListener()
 				{
@@ -821,13 +831,13 @@ public class OccasionActivity  extends Activity {
 		AnimationSet animSet;
 		
 		
-		addMoveResizeAnimation(		500, 	m_ivBtnMood, 		-117.0f * m_ratioTo320X, -115.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
-		addMoveResizeAnimation( 	500, 	m_ivBtnCelebration,	 320.0f * m_ratioTo320X, -115.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
-		addMoveResizeAnimation( 	500, 	m_ivBtnTheme, 		-117.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
-		addMoveResizeAnimation( 	500, 	m_ivBtnEvent, 		 320.0f * m_ratioTo320X,  151.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
-		addMoveResizeAnimation( 	500, 	m_ivBtnSports, 		-117.0f * m_ratioTo320X,  416.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation(		500, 	m_ivBtnMood, 		homeButtonPos[0][2]  * m_ratioTo320X, homeButtonPos[0][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation( 	500, 	m_ivBtnCelebration,	homeButtonPos[1][2]  * m_ratioTo320X, homeButtonPos[1][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation( 	500, 	m_ivBtnTheme, 		homeButtonPos[2][2]  * m_ratioTo320X, homeButtonPos[2][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation( 	500, 	m_ivBtnEvent, 		homeButtonPos[3][2]  * m_ratioTo320X, homeButtonPos[3][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation( 	500, 	m_ivBtnSports, 		homeButtonPos[4][2]  * m_ratioTo320X, homeButtonPos[4][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
 		animSet = 
-		addMoveResizeAnimation( 	500, 	m_ivBtnHoliday,		 320.0f * m_ratioTo320X,  416.0f * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
+		addMoveResizeAnimation( 	500, 	m_ivBtnHoliday,	    homeButtonPos[5][2]  * m_ratioTo320X, homeButtonPos[5][3]  * m_ratioTo480Y, 115.0f * m_minRatio, 		115.0f * m_minRatio,	false) ;
 		
 		animSet.setAnimationListener(new AnimationListener()
 		{
@@ -1136,19 +1146,25 @@ public class OccasionActivity  extends Activity {
     	{
 			@Override
 			public void onResult(Object obj) {
-				m_displayedPlaylists.clear();
-				
-				Playlist retPl = (Playlist)obj;
-				m_displayedPlaylists.add(retPl);
-				
-				updateSongsListView();
-				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				if(m_bRunning)
+				{
+					m_displayedPlaylists.clear();
+					
+					Playlist retPl = (Playlist)obj;
+					m_displayedPlaylists.add(retPl);
+					
+					updateSongsListView();
+					m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				}
 			}
 
 			@Override
 			public void onError() {
-				m_displayedPlaylists.clear();
-				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				if(m_bRunning)
+				{
+					m_displayedPlaylists.clear();
+					m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+				}
 			}
     	};
     	getPlaylist.run();
@@ -1166,25 +1182,28 @@ public class OccasionActivity  extends Activity {
     	{
 			@Override
 			public void onResult(Object obj) {
-				
-				m_displayedOccasion = (Occasion) obj;
-				if(m_displayedOccasion != null)
+				if(m_bRunning)
 				{
-					Log.v(LOGTAG, "fetchPlaylistsForOccasion getOccasion resulted");
-					
-					ArrayList<Playlist> arrayPlaylist = m_displayedOccasion.m_playlists;
-					m_displayedPlaylists = arrayPlaylist;
-					
-					if(m_displayedPlaylists != null && m_level == 4)
+					m_displayedOccasion = (Occasion) obj;
+					if(m_displayedOccasion != null)
 					{
-						fetchPlaylistContent(m_displayedPlaylists.get(0));
+						Log.v(LOGTAG, "fetchPlaylistsForOccasion getOccasion resulted");
+						
+						ArrayList<Playlist> arrayPlaylist = m_displayedOccasion.m_playlists;
+						m_displayedPlaylists = arrayPlaylist;
+						
+						if(m_displayedPlaylists != null && m_level == 4)
+						{
+							fetchPlaylistContent(m_displayedPlaylists.get(0));
+						}
 					}
 				}
 			}
 
 			@Override
 			public void onError() {
-				m_pbActivityIndicator.setVisibility(View.GONE);
+				if(m_bRunning)
+					m_pbActivityIndicator.setVisibility(View.GONE);
 			}
     	};
     	getOccasion.run(); 
@@ -1344,7 +1363,6 @@ public class OccasionActivity  extends Activity {
     
     private void setElemPosSize(View view, float left, float top, float width, float height)
     {
-    	//Log.v(LOGTAG, "setElemPosSize left=" + left + " top=" + top + " width="+ width + " height="+height);
     	RelativeLayout.LayoutParams paramold = (RelativeLayout.LayoutParams)view.getLayoutParams();
     	paramold.width = (int)width;
     	paramold.height = (int)height;
@@ -1452,21 +1470,39 @@ public class OccasionActivity  extends Activity {
             public void onGlobalLayout() {
             	m_contentWidth = m_rlContent.getWidth();
             	m_contentHeight = m_rlContent.getHeight();
+            	
+            	
             	m_ratioTo320X = (float)m_contentWidth / 320.0f;
             	m_ratioTo480Y = (float)m_contentHeight / 416.0f;
-            	
             	m_minRatio = Math.min(m_ratioTo320X, m_ratioTo480Y);
             	m_textRatio =  (float)m_contentWidth / 800.0f;
             	
-            	int buttonSize = (int)(115 * m_minRatio);
+            	int display_mode = getResources().getConfiguration().orientation;
+
+            	if (display_mode == 1) {
+            	    
+            	} else {
+            	    //setContentView(R.layout.main_land);
+            		m_ratioTo480Y  = (float)m_contentWidth / 416.0f * 0.8f ;
+            		m_minRatio = Math.min((float) m_contentHeight / 320.0f, (float)m_contentWidth / 416.0f);
+            		m_textRatio = m_textRatio * 0.5f;
+            		
+            		//correct home buttons positions
+            		for(int i = 0; i<6; i++)
+            		{
+            			float tmp;
+            			tmp = homeButtonPos[i][0]; homeButtonPos[i][0] = homeButtonPos[i][1]; homeButtonPos[i][1] = tmp;
+            			tmp = homeButtonPos[i][2]; homeButtonPos[i][2] = homeButtonPos[i][3]; homeButtonPos[i][3] = tmp;
+            			
+            			homeButtonPos[i][0] *= 0.9f;//(320.0f / 416.0f);
+            			homeButtonPos[i][2] *= 0.9f;//(320.0f / 416.0f);
+            		}
+            	}
             	
-            	// Occasion Buttons
-            	setElemPosSize(m_ivBtnMood, 		(int)( 29 * m_ratioTo320X), 	(int)(013 * m_ratioTo480Y), buttonSize, buttonSize);
-            	setElemPosSize(m_ivBtnCelebration, 	(int)(175 * m_ratioTo320X), 	(int)(013 * m_ratioTo480Y), buttonSize, buttonSize);
-            	setElemPosSize(m_ivBtnTheme, 		(int)( 29 * m_ratioTo320X), 	(int)(151 * m_ratioTo480Y), buttonSize, buttonSize);
-            	setElemPosSize(m_ivBtnEvent, 		(int)(175 * m_ratioTo320X), 	(int)(151 * m_ratioTo480Y), buttonSize, buttonSize);
-            	setElemPosSize(m_ivBtnSports, 		(int)( 29 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), buttonSize, buttonSize);
-            	setElemPosSize(m_ivBtnHoliday, 		(int)(175 * m_ratioTo320X), 	(int)(289 * m_ratioTo480Y), buttonSize, buttonSize);
+            	
+            	
+            	// home buttons.
+            	positionFirstButtons(false);
             	
             	// first button
             	setElemPosSize(m_firstButton, 		(int)(  0 * m_ratioTo320X), 	(int)(  0 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
@@ -1561,6 +1597,8 @@ public class OccasionActivity  extends Activity {
 				}
 				else if (v == m_ivBtnNavPlaylist)
 				{
+					OccasionActivity.this.m_lvPlaylists.stopMedia();
+					
 					Intent intent = new Intent(OccasionActivity.this, PlaylistActivity.class);
 					startActivity(intent);
 				}

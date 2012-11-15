@@ -144,4 +144,6 @@ public class PlaylistActivity extends Activity{
     	}
     }
 	
+    
+    public boolean m_bRunning = false;
 }

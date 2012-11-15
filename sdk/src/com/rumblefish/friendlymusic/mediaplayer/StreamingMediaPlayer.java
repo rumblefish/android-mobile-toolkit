@@ -24,7 +24,7 @@ import android.util.Log;
  */
 public class StreamingMediaPlayer {
 
-
+	public static final int INTIAL_KB_BUFFER = 1000; //96 * 30 / 8; //assume 96kbps * 30secs
     OnCompletionListener m_mpCompletionListener;
     OnBufferingUpdateListener m_mpBufferingUpdateListener;
     OnErrorListener m_mpErrorListener;
@@ -135,12 +135,13 @@ public class StreamingMediaPlayer {
             totalBytesRead += numread;
             incrementalBytesRead += numread;
             totalKbRead = totalBytesRead/1000;
+            testMediaBuffer();
 //            Log.v(getClass().getName(), "Downloaded " + totalKbRead + "kB");
         } while (validateNotInterrupted());   
        		stream.close();
         if (validateNotInterrupted()) {
 	       	try {
-        		startMediaPlayer();
+        		//startMediaPlayer();
     		} catch (Exception e) {
     			Log.e(getClass().getName(), "Error copying buffered conent.", e);
     			m_bDownloading = false;
@@ -158,9 +159,16 @@ public class StreamingMediaPlayer {
     private boolean validateNotInterrupted() {
 		if (isInterrupted) {
 			if (mediaPlayer != null) {
-				if(mediaPlayer.isPlaying())
-					mediaPlayer.pause();
+				//if(mediaPlayer.isPlaying())
+				//	mediaPlayer.pause();
 				//mediaPlayer.release();
+				try{
+					mediaPlayer.stop();
+				}
+				catch(Exception e)
+				{
+					
+				}
 			}
 			return false;
 		} else {
@@ -169,6 +177,32 @@ public class StreamingMediaPlayer {
     }
 
     
+    /**
+     * Test whether we need to transfer buffered data to the MediaPlayer.
+     * Interacting with MediaPlayer on non-main UI thread can causes crashes to so perform this using a Handler.
+     */  
+    private void  testMediaBuffer() {
+	    Runnable updater = new Runnable() {
+	        public void run() {
+	            if (mediaPlayer == null) {
+	            	//  Only create the MediaPlayer once we have the minimum buffered data
+	            	if ( totalKbRead >= INTIAL_KB_BUFFER) {
+	            		try {
+		            		startMediaPlayer();
+	            		} catch (Exception e) {
+	            			Log.e(getClass().getName(), "Error copying buffered conent.", e);    			
+	            		}
+	            	}
+	            } else if ( mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition() <= 1000 ){ 
+	            	//  NOTE:  The media player has stopped at the end so transfer any existing buffered data
+	            	//  We test for < 1second of data because the media player can stop when there is still
+	            	//  a few milliseconds of data left to play
+	            	transferBufferToMediaPlayer();
+	            }
+	        }
+	    };
+	    handler.post(updater);
+    }
     
     private void startMediaPlayer() {
         try {   
@@ -186,7 +220,7 @@ public class StreamingMediaPlayer {
         	Log.e(getClass().getName(),"Buffered File length: " + bufferedFile.length()+"");
         	
         	mediaPlayer = createMediaPlayer(bufferedFile);
-        	m_mpBufferingUpdateListener.onBufferingUpdate(mediaPlayer, 100);
+        	
     		// We have pre-loaded enough content and started the MediaPlayer so update the buttons & progress meters.
 	    	mediaPlayer.start();      	
 			
@@ -200,10 +234,7 @@ public class StreamingMediaPlayer {
     throws IOException {
     	MediaPlayer mPlayer = new MediaPlayer();
     	
-    	mPlayer.setOnCompletionListener(m_mpCompletionListener);
-    	mPlayer.setOnBufferingUpdateListener(m_mpBufferingUpdateListener);
-    	mPlayer.setOnErrorListener(m_mpErrorListener);
-
+    	
 		//  It appears that for security/permission reasons, it is better to pass a FileDescriptor rather than a direct path to the File.
 		//  Also I have seen errors such as "PVMFErrNotSupported" and "Prepare failed.: status=0x1" if a file path String is passed to
 		//  setDataSource().  So unless otherwise noted, we use a FileDescriptor here.
@@ -264,6 +295,15 @@ public class StreamingMediaPlayer {
 			public void run() {
    	        	transferBufferToMediaPlayer();
 
+   	        	if(mediaPlayer != null)
+   	        	{
+   	        		m_mpBufferingUpdateListener.onBufferingUpdate(mediaPlayer, 100);
+   	        		
+   	        		mediaPlayer.setOnCompletionListener(m_mpCompletionListener);
+	   	        	//mediaPlayer.setOnBufferingUpdateListener(m_mpBufferingUpdateListener);
+   	        		mediaPlayer.setOnErrorListener(m_mpErrorListener);
+   	        	}
+
    	        	// Delete the downloaded File as it's now been transferred to the currently playing buffer file.
    	        	downloadingMediaFile.delete();
 	        }
@@ -313,8 +353,13 @@ public class StreamingMediaPlayer {
 	}
 
 	public void reset() {
+		interrupt();
 		if (mediaPlayer!= null)
-			mediaPlayer.reset();
+		{
+			mediaPlayer.stop();
+			mediaPlayer.release();
+			mediaPlayer = null;
+		}
 	}
 	
 	public void pause() {
@@ -325,7 +370,11 @@ public class StreamingMediaPlayer {
 	public void release() {
 		interrupt();
 		if (mediaPlayer!= null)
+		{
 			mediaPlayer.release();
+			mediaPlayer = null;
+		}
+			
 	}
 
 	public void start() {

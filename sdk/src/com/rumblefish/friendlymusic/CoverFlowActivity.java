@@ -176,6 +176,7 @@ public class CoverFlowActivity  extends Activity {
 			for(int i = 0 ; i < m_playlists.size(); i++)
 			{
 				Playlist pl = m_playlists.get(i);
+				Log.v(LOGTAG, m_playlists.get(i).m_title + " => " + pl.m_imageURL.toString());
 				ImageLoader.getInstance().load(null, pl.m_imageURL.toString(), true);
 			}
 			
@@ -196,7 +197,7 @@ public class CoverFlowActivity  extends Activity {
 			Bitmap bm = ImageLoader.getInstance().get(pl.m_imageURL.toString());
 			if(bm != null)
 			{
-				m_bitmaps.add(bm);
+				m_bitmaps.add(0, bm);
 			}
 			else
 			{

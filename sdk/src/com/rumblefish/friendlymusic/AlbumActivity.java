@@ -100,6 +100,10 @@ public class AlbumActivity extends Activity{
     	{
 			@Override
 			public void onResult(Object obj) {
+				
+				if(m_bRunning == false)
+					return;
+				
 				Playlist retPl = (Playlist)obj;
 				m_lvSongList.setVisibility(View.VISIBLE);
 				m_lvSongList.showMedias(retPl.m_media, false);
@@ -108,6 +112,10 @@ public class AlbumActivity extends Activity{
 
 			@Override
 			public void onError() {
+
+				if(m_bRunning == false)
+					return;
+				
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 			}
     	};
@@ -127,6 +135,8 @@ public class AlbumActivity extends Activity{
 			}
 			else if (v == m_ivBtnNavPlaylist)
 			{
+				m_lvSongList.stopMedia();
+				
 				Intent intent = new Intent(AlbumActivity.this, PlaylistActivity.class);
 				startActivity(intent);
 			}
@@ -138,6 +148,7 @@ public class AlbumActivity extends Activity{
     {
     	super.onDestroy();
     	releaseResource();
+    	m_bRunning = false;
     }
     
     @Override
@@ -169,5 +180,14 @@ public class AlbumActivity extends Activity{
     		m_lvSongList = null;
     	}
     }
+    
+    @Override
+    protected void onStart()
+    {
+    	super.onStart();
+    	m_bRunning = true;
+    }
 	
+    
+    public boolean m_bRunning = false;
 }

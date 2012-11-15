@@ -68,6 +68,8 @@ public class MoodMap extends Activity implements OnTouchListener{
 		PLAYING
 	}
 	
+	public boolean m_bRunning = false;
+	
 	RelativeLayout 	m_rlMoodMap;
 	ImageView	m_ivSurround;
 	ImageView	m_ivBtnDone;
@@ -137,8 +139,16 @@ public class MoodMap extends Activity implements OnTouchListener{
         
         //init variables
         m_adjacentColors = new ArrayList<Integer>();
+        
+        
         m_ivGlow.setVisibility(View.INVISIBLE);
         m_ivRing.setVisibility(View.INVISIBLE);
+        
+//        if(StaticResources.m_selectedColor != 0)
+//        {
+//        	m_ivGlow.setVisibility(View.VISIBLE);
+//        	m_ivRing.setVisibility(View.VISIBLE);
+//        }
         
         if(StaticResources.m_crosshairPos != null)
         {
@@ -151,6 +161,12 @@ public class MoodMap extends Activity implements OnTouchListener{
         }
         
         m_playingRow = -1;
+        
+        
+
+        //animations
+        m_animFadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+        m_animFadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
         
         //copying playlist.plist to document folder
         //
@@ -175,9 +191,6 @@ public class MoodMap extends Activity implements OnTouchListener{
         
         m_pbActivityIndicator.setVisibility(View.INVISIBLE);
         
-        //animations
-        m_animFadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-        m_animFadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
         
         //media player
         if(StaticResources.m_mediaPlayer != null)
@@ -247,6 +260,7 @@ public class MoodMap extends Activity implements OnTouchListener{
     	
     	m_lvSongs 	= (ListView)findViewById(R.id.lvSongs);
     	m_pbActivityIndicator = (ProgressBar)findViewById(R.id.pbActivityIndicator);
+    	m_pbActivityIndicator.setVisibility(View.INVISIBLE);
     	
     	ViewTreeObserver vto = m_rlMoodMap.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -282,6 +296,19 @@ public class MoodMap extends Activity implements OnTouchListener{
             	setMoodMapElemSize(m_ivSelector,  		(int)(68 * ratioTo480),  (int)(68 * ratioTo480));
             	setMoodMapElemSize(m_ivMessage,  		(int)(292 * ratioTo480),  (int)(84 * ratioTo480));
             	setMoodMapElemSize(m_ivFilterMessage,  		(int)(292 * ratioTo480),  (int)(84 * ratioTo480));
+            	
+            	if(StaticResources.m_selectedColor != 0)
+            	{
+            		ringImageByFillingColor(StaticResources.m_selectedColor);
+            	}
+            	
+            	if(StaticResources.m_playlistID != -1 && StaticResources.m_playlist==null)
+            	{
+            		m_playlistID = StaticResources.m_playlistID;
+            		getPlaylistFromServer(); 
+            	}
+            	
+            	m_rlMoodMap.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
         
@@ -306,7 +333,8 @@ public class MoodMap extends Activity implements OnTouchListener{
     	}
     	
     	float ratioTo320 = (float)m_rlMoodMapSize / 320;
-    	m_ringBitmap = Bitmap.createBitmap(imgView.getMeasuredWidth(), imgView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+    	float ratioTo480 = (float)m_rlMoodMapSize / 480;
+    	m_ringBitmap = Bitmap.createBitmap((int)(407 * ratioTo480),  (int)(407 * ratioTo480), Bitmap.Config.ARGB_8888); //Bitmap.createBitmap(imgView.getMeasuredWidth(), imgView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
     	Canvas canvas = new Canvas(m_ringBitmap);
     	Paint paint = new Paint();
     	paint.setColor(color);
@@ -388,9 +416,14 @@ public class MoodMap extends Activity implements OnTouchListener{
 					m_crosshairPos = new Point();
 				m_crosshairPos.x = (int)curX;
 				m_crosshairPos.y = (int)curY;
+				
 				m_ivRing.setVisibility(View.INVISIBLE);
+		    	m_ivGlow.setVisibility(View.INVISIBLE);
+		    	
 		    	m_ivRing.startAnimation(m_animFadeOut);
-		    	m_ivGlow.startAnimation(m_animFadeIn);
+		    	m_ivGlow.startAnimation(m_animFadeOut);
+		    	
+		    	
 		    	d = android.util.FloatMath.sqrt((float)Math.pow(121.0f- ratX, 2) + (float)Math.pow(121.0f - ratY, 2));
 			    if( d <= 121.0f)
 			    {
@@ -437,11 +470,12 @@ public class MoodMap extends Activity implements OnTouchListener{
     	}
     }
     
+    Producer m_getMedia = null;
     private void getPlaylistFromServer()
     {
     	RFAPI api = RFAPI.getSingleTone();
-    	Producer getMedia = api.getPlaylist(m_playlistID + 187);
-    	if(getMedia == null)
+    	m_getMedia = api.getPlaylist(m_playlistID + 187);
+    	if(m_getMedia == null)
     		return;
     	
     	m_isPlaying = false;
@@ -452,10 +486,12 @@ public class MoodMap extends Activity implements OnTouchListener{
     	m_pbActivityIndicator.setVisibility(View.VISIBLE);
     	m_ivBtnDone.setEnabled(false);
     	
-    	getMedia.m_delegate = new ProducerDelegate()
+    	m_getMedia.m_delegate = new ProducerDelegate()
     	{
 			@Override
 			public void onResult(Object obj) {
+				if(m_bRunning == false)
+					return;
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 				updatePlaylist((Playlist) obj);
 				
@@ -470,11 +506,14 @@ public class MoodMap extends Activity implements OnTouchListener{
 
 			@Override
 			public void onError() {
+				if(m_bRunning == false)
+					return;
+				
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 				m_ivBtnDone.setEnabled(true);
 			}
     	};
-    	getMedia.run();
+    	m_getMedia.run();
     }
     
     protected void releaseResource()
@@ -483,12 +522,16 @@ public class MoodMap extends Activity implements OnTouchListener{
     	{
     		m_mediaPlayer.reset();
     		m_mediaPlayer = null;
-    		m_crosshairPos = null;
-    		m_playlist = null;
-    		m_selectedCellID = -1;
-    		m_selectedColor = 0;
-    		m_isPlaying = false;
     	}
+		m_crosshairPos = null;
+		m_playlistID = -1;
+		m_playlist = null;
+		m_selectedCellID = -1;
+		m_selectedColor = 0;
+		m_isPlaying = false;
+    	
+		if( m_getMedia != null )
+			m_getMedia.cancel();
     }
     
     @Override
@@ -496,6 +539,7 @@ public class MoodMap extends Activity implements OnTouchListener{
 	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
 	        // do something on back.
 	    	releaseResource();
+	    	m_bRunning = false;
 	    	setResult(RESULT_OK);
 	    	finish();
 	        return true;
@@ -503,6 +547,13 @@ public class MoodMap extends Activity implements OnTouchListener{
 
 	    return super.onKeyDown(keyCode, event);
 	}
+    
+    @Override
+    protected void onStart()
+    {
+    	super.onStart();
+    	m_bRunning = true;
+    }
     
     @Override
     protected void onResume()
@@ -529,14 +580,21 @@ public class MoodMap extends Activity implements OnTouchListener{
     @Override
     protected void onDestroy()
     {
+    	m_bRunning = false;
+    	
     	super.onDestroy();
     	
     	StaticResources.m_mediaPlayer = m_mediaPlayer;
     	StaticResources.m_crosshairPos = m_crosshairPos;
+    	StaticResources.m_playlistID = m_playlistID;
     	StaticResources.m_playlist = m_playlist;
     	StaticResources.m_selectedCellID = m_selectedCellID;
 		StaticResources.m_selectedColor = m_selectedColor;
 		StaticResources.m_isPlaying = m_isPlaying;
+		
+
+		if( m_getMedia != null )
+			m_getMedia.cancel();
     }
     
     protected OnClickListener m_onClickListener = new OnClickListener()
@@ -595,6 +653,8 @@ public class MoodMap extends Activity implements OnTouchListener{
 			else if(v == m_ivBtnPlaylist)
 			{
 				//launch playlist activity
+				stopMedia();
+				
 				Intent intent = new Intent(MoodMap.this, PlaylistActivity.class);
 				startActivity(intent);
 			}

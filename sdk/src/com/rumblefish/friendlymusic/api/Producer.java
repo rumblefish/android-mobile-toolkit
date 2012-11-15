@@ -27,4 +27,12 @@ public class Producer
 		m_task.m_parser = m_parser;
 		m_task.execute(m_request);
 	}
+	
+	public void cancel()
+	{
+		if(m_task != null)
+		{
+			m_task.cancel(true);
+		}
+	}
 }

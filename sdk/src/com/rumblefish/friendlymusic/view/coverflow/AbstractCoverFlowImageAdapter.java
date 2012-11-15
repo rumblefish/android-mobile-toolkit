@@ -4,9 +4,9 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -20,7 +20,7 @@ import android.widget.ImageView;
 public abstract class AbstractCoverFlowImageAdapter extends BaseAdapter {
 
     /** The Constant TAG. */
-    private static final String TAG = AbstractCoverFlowImageAdapter.class.getSimpleName();
+//    private static final String TAG = AbstractCoverFlowImageAdapter.class.getSimpleName();
 
     /** The width. */
     private float width = 0;
@@ -29,7 +29,8 @@ public abstract class AbstractCoverFlowImageAdapter extends BaseAdapter {
     private float height = 0;
 
     /** The bitmap map. */
-    private final Map<Integer, WeakReference<Bitmap>> bitmapMap = new HashMap<Integer, WeakReference<Bitmap>>();
+    @SuppressLint("UseSparseArrays")
+	private final Map<Integer, WeakReference<Bitmap>> bitmapMap = new HashMap<Integer, WeakReference<Bitmap>>();
 
     public AbstractCoverFlowImageAdapter() {
         super();
@@ -61,16 +62,16 @@ public abstract class AbstractCoverFlowImageAdapter extends BaseAdapter {
         if (weakBitmapReference != null) {
             final Bitmap bitmap = weakBitmapReference.get();
             if (bitmap == null) {
-                Log.v(TAG, "Empty bitmap reference at position: " + position + ":" + this);
+//                Log.v(TAG, "Empty bitmap reference at position: " + position + ":" + this);
             } else {
-                Log.v(TAG, "Reusing bitmap item at position: " + position + ":" + this);
+//                Log.v(TAG, "Reusing bitmap item at position: " + position + ":" + this);
                 return bitmap;
             }
         }
-        Log.v(TAG, "Creating item at position: " + position + ":" + this);
+//        Log.v(TAG, "Creating item at position: " + position + ":" + this);
         final Bitmap bitmap = createBitmap(position);
         bitmapMap.put(position, new WeakReference<Bitmap>(bitmap));
-        Log.v(TAG, "Created item at position: " + position + ":" + this);
+//        Log.v(TAG, "Created item at position: " + position + ":" + this);
         return bitmap;
     }
 
@@ -104,11 +105,11 @@ public abstract class AbstractCoverFlowImageAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {
             final Context context = parent.getContext();
-            Log.v(TAG, "Creating Image view at position: " + position + ":" + this);
+//            Log.v(TAG, "Creating Image view at position: " + position + ":" + this);
             imageView = new ImageView(context);
             imageView.setLayoutParams(new CoverFlow.LayoutParams((int) width, (int) height));
         } else {
-            Log.v(TAG, "Reusing view at position: " + position + ":" + this);
+//            Log.v(TAG, "Reusing view at position: " + position + ":" + this);
             imageView = (ImageView) convertView;
         }
         imageView.setImageBitmap(getItem(position));

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 
 /**
  * This class is an adapter that provides images from a fixed set of resource
@@ -14,7 +13,7 @@ import android.util.Log;
  */
 public class BitmapAdapter extends AbstractCoverFlowImageAdapter {
 
-    private static final String TAG = BitmapAdapter.class.getSimpleName();
+    //private static final String TAG = BitmapAdapter.class.getSimpleName();
     
     public final Context context;
     ArrayList<Bitmap>	m_bitmaps;
@@ -40,7 +39,7 @@ public class BitmapAdapter extends AbstractCoverFlowImageAdapter {
 
     @Override
     protected Bitmap createBitmap(final int position) {
-        Log.v(TAG, "creating item " + position);
+        //Log.v(TAG, "creating item " + position);
         return m_bitmaps.get(position);
     }
 
