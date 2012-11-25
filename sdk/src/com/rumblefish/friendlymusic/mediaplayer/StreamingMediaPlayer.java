@@ -24,7 +24,7 @@ import android.util.Log;
  */
 public class StreamingMediaPlayer {
 
-	public static final int INTIAL_KB_BUFFER = 1000; //96 * 30 / 8; //assume 96kbps * 30secs
+	public static final int INTIAL_KB_BUFFER = 800; //96 * 30 / 8; //assume 96kbps * 30secs
     OnCompletionListener m_mpCompletionListener;
     OnBufferingUpdateListener m_mpBufferingUpdateListener;
     OnErrorListener m_mpErrorListener;
@@ -65,7 +65,8 @@ public class StreamingMediaPlayer {
      */  
     public void startStreaming(final String mediaUrl) throws IOException {
 
-//    	Log.v(getClass().getName(), "started streaming from mediaUrl:" + mediaUrl);
+    	Log.v(getClass().getName(), "started streaming from mediaUrl:" + mediaUrl);
+    	
 		Runnable r = new Runnable() {   
 	        public void run() {   
 	            try {
@@ -87,7 +88,7 @@ public class StreamingMediaPlayer {
 	            	
 	        		downloadAudioIncrement(mediaUrl);
 	            } catch (IOException e) {
-	            	Log.e(getClass().getName(), "Unable to initialize the MediaPlayer for fileUrl=" + mediaUrl, e);
+	            	Log.e(getClass().getName(), "Unable to initialize the MediaPlayer for fileUrl = " + mediaUrl, e);
 	            	return;
 	            }   
 	        }   
@@ -106,12 +107,22 @@ public class StreamingMediaPlayer {
     	
     	m_mpBufferingUpdateListener.onBufferingUpdate(null, 0);
     	
-    	URLConnection cn = new URL(mediaUrl).openConnection();   
-        cn.connect();   
-        InputStream stream = cn.getInputStream();
-        if (stream == null) {
-        	Log.e(getClass().getName(), "Unable to create InputStream for mediaUrl:" + mediaUrl);
-        }
+    	InputStream stream = null;
+    	try
+    	{
+	    	URLConnection cn = new URL(mediaUrl).openConnection();   
+	        cn.connect();   
+	        stream = cn.getInputStream();
+	        if (stream == null) {
+	        	Log.e(getClass().getName(), "Unable to create InputStream for mediaUrl:" + mediaUrl);
+	        	m_bDownloading  = false;
+	        }
+    	}
+    	catch(Exception e)
+    	{
+    		m_bDownloading = false;
+    		return;
+    	}
         
 		downloadingMediaFile = new File(context.getCacheDir(),"downloadingMedia.dat");
 		
@@ -136,7 +147,7 @@ public class StreamingMediaPlayer {
             incrementalBytesRead += numread;
             totalKbRead = totalBytesRead/1000;
             testMediaBuffer();
-//            Log.v(getClass().getName(), "Downloaded " + totalKbRead + "kB");
+            //Log.v(getClass().getName(), "Downloaded " + totalKbRead + "kB");
         } while (validateNotInterrupted());   
        		stream.close();
         if (validateNotInterrupted()) {
@@ -144,8 +155,8 @@ public class StreamingMediaPlayer {
         		//startMediaPlayer();
     		} catch (Exception e) {
     			Log.e(getClass().getName(), "Error copying buffered conent.", e);
-    			m_bDownloading = false;
     			out.close();
+    			m_bDownloading = false;
     			return;
     		}
 	       	
@@ -184,21 +195,24 @@ public class StreamingMediaPlayer {
     private void  testMediaBuffer() {
 	    Runnable updater = new Runnable() {
 	        public void run() {
-	            if (mediaPlayer == null) {
-	            	//  Only create the MediaPlayer once we have the minimum buffered data
-	            	if ( totalKbRead >= INTIAL_KB_BUFFER) {
-	            		try {
-		            		startMediaPlayer();
-	            		} catch (Exception e) {
-	            			Log.e(getClass().getName(), "Error copying buffered conent.", e);    			
-	            		}
-	            	}
-	            } else if ( mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition() <= 1000 ){ 
-	            	//  NOTE:  The media player has stopped at the end so transfer any existing buffered data
-	            	//  We test for < 1second of data because the media player can stop when there is still
-	            	//  a few milliseconds of data left to play
-	            	transferBufferToMediaPlayer();
-	            }
+	        	if(validateNotInterrupted() && m_bDownloading == true)
+	        	{
+		            if (mediaPlayer == null) {
+		            	//  Only create the MediaPlayer once we have the minimum buffered data
+		            	if ( totalKbRead >= INTIAL_KB_BUFFER) {
+		            		try {
+			            		startMediaPlayer();
+		            		} catch (Exception e) {
+		            			Log.e(getClass().getName(), "Error copying buffered conent.", e);    			
+		            		}
+		            	}
+		            } else if ( mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition() <= 1000 ){ 
+		            	//  NOTE:  The media player has stopped at the end so transfer any existing buffered data
+		            	//  We test for < 1second of data because the media player can stop when there is still
+		            	//  a few milliseconds of data left to play
+		            	transferBufferToMediaPlayer();
+		            }
+	        	}
 	        }
 	    };
 	    handler.post(updater);
@@ -293,6 +307,10 @@ public class StreamingMediaPlayer {
     private void fireDataFullyLoaded() {
 		Runnable updater = new Runnable() { 
 			public void run() {
+				if(mediaPlayer == null)
+				{
+					startMediaPlayer();
+				}
    	        	transferBufferToMediaPlayer();
 
    	        	if(mediaPlayer != null)
@@ -371,6 +389,7 @@ public class StreamingMediaPlayer {
 		interrupt();
 		if (mediaPlayer!= null)
 		{
+			mediaPlayer.stop();
 			mediaPlayer.release();
 			mediaPlayer = null;
 		}

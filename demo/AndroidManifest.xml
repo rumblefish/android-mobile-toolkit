@@ -1,54 +1,55 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.rumblefish.friendlymusic"
+    package="com.rumblefish.rfsdkdemo"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0">
 
-    <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     
-    <application
+    
+    <application android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         
-        <activity android:name="FriendlyMusic"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-
+        <activity android:theme="@android:style/Theme.NoTitleBar.Fullscreen" 
+            android:name="FriendlyMusicDemoActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
 
-        </activity>
-        <activity android:name="MoodMap"
+        
+        <activity android:name="com.rumblefish.friendlymusic.FriendlyMusic"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
-        </activity>
-        <activity android:name="OccasionActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
         </activity>
         
-        <activity android:name="CoverFlowActivity"
+        <activity android:name="com.rumblefish.friendlymusic.MoodMap"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        </activity>
+        
+        <activity android:name="com.rumblefish.friendlymusic.OccasionActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        </activity>
+        
+        <activity android:name="com.rumblefish.friendlymusic.CoverFlowActivity"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
         </activity>
         
-        <activity android:name="PlaylistActivity"
+        <activity android:name="com.rumblefish.friendlymusic.PlaylistActivity"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
         </activity>
         
-        <activity android:name="AlbumActivity"
+        <activity android:name="com.rumblefish.friendlymusic.AlbumActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            
         </activity>
+        
     </application>
+    
+    
 
 </manifest>

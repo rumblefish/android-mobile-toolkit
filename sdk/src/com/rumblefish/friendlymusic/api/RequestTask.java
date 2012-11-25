@@ -21,7 +21,12 @@ public class RequestTask extends AsyncTask<URLRequest, Integer, Long> {
          else
          {
         	 Object obj = m_parser.parse(m_result);
-        	 m_delegate.onResult(obj);
+        	 if(obj == null)
+        	 {
+        		 m_delegate.onError();
+        	 }
+        	 else
+        		 m_delegate.onResult(obj);
          }
     }
 

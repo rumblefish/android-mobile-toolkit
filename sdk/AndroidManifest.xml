@@ -15,40 +15,29 @@
         android:theme="@style/AppTheme" >
         
         <activity android:name="FriendlyMusic"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
+        
         <activity android:name="MoodMap"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
+        
         <activity android:name="OccasionActivity"
-            
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
         
         <activity android:name="CoverFlowActivity"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
         
         <activity android:name="PlaylistActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
         
         <activity android:name="AlbumActivity"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
     </application>
 

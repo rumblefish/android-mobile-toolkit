@@ -1,7 +1,9 @@
 package com.rumblefish.friendlymusic;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
@@ -11,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.rumblefish.friendlymusic.api.LocalPlaylist;
+import com.rumblefish.friendlymusic.api.StaticResources;
 import com.rumblefish.friendlymusic.view.SongListView;
 import com.rumblefish.friendlymusic.view.SongListView.ButtonStyle;
 
@@ -43,6 +46,12 @@ public class PlaylistActivity extends Activity{
         initView();
 	}
 	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	    setContentView(R.layout.playlist);
+	}
+	
 	private void initView()
     {
 		
@@ -65,16 +74,24 @@ public class PlaylistActivity extends Activity{
 		m_pbActivityIndicator = (ProgressBar)findViewById(R.id.pbActivityIndicator);
 		m_pbActivityIndicator.setVisibility(View.VISIBLE);
 		
-		if(m_lvSongList == null)
+		
+		if(StaticResources.m_plSongListView == null)
 		{
 			m_lvSongList = new SongListView(this);
 			m_lvSongList.setButtonStyle(ButtonStyle.BUTTON_REMOVE);
 			m_rlContent.addView(m_lvSongList, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			m_lvSongList.setVisibility(View.INVISIBLE);
+			
+			loadSongList();
 		}
-		
-		loadSongList();
-		
+		else
+		{
+			m_lvSongList = StaticResources.m_plSongListView;
+			m_rlContent.addView(m_lvSongList, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+			
+			m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			m_lvSongList.setVisibility(View.VISIBLE);
+		}
     }
 	
 	private void loadSongList()
@@ -108,13 +125,25 @@ public class PlaylistActivity extends Activity{
     };
     
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	        // do something on back.
+	    	releaseResource();
+	    	finish();
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}
+    
+    @Override
     protected void onPause()
     {
     	super.onPause();
-    	if(this.m_lvSongList != null)
-    	{
-    		this.m_lvSongList.pauseMedia();
-    	}
+//    	if(this.m_lvSongList != null)
+//    	{
+//    		this.m_lvSongList.pauseMedia();
+//    	}
     }
     
     @Override
@@ -131,8 +160,13 @@ public class PlaylistActivity extends Activity{
     @Override
     protected void onDestroy()
     {
+    	if(m_lvSongList != null)
+    	{
+    		m_rlContent.removeView(m_lvSongList);
+    	}
+    	
     	super.onDestroy();
-    	releaseResource();
+    	StaticResources.m_plSongListView = m_lvSongList;
     }
     
     private void releaseResource()

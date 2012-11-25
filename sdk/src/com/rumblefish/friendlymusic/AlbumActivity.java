@@ -3,6 +3,7 @@ package com.rumblefish.friendlymusic;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
@@ -15,7 +16,9 @@ import com.rumblefish.friendlymusic.api.Playlist;
 import com.rumblefish.friendlymusic.api.Producer;
 import com.rumblefish.friendlymusic.api.ProducerDelegate;
 import com.rumblefish.friendlymusic.api.RFAPI;
+import com.rumblefish.friendlymusic.api.StaticResources;
 import com.rumblefish.friendlymusic.view.SongListView;
+import com.rumblefish.friendlymusic.view.SongListView.ButtonStyle;
 
 public class AlbumActivity extends Activity{
 
@@ -57,8 +60,33 @@ public class AlbumActivity extends Activity{
         	finish();
         }
         
-        loadSongList();
+        if(StaticResources.m_albumPlaylist == null)
+		{
+        	loadSongList();
+		}
+		else
+		{
+			this.m_playlist = StaticResources.m_albumPlaylist;
+			
+			m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			m_lvSongList.setVisibility(View.VISIBLE);
+		}
+        
 	}
+	
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	        // do something on back.
+	    	releaseResource();
+	    	finish();
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}
+
 	
 	private void initView()
     {
@@ -79,12 +107,25 @@ public class AlbumActivity extends Activity{
 		m_pbActivityIndicator = (ProgressBar)findViewById(R.id.pbActivityIndicator);
 		m_pbActivityIndicator.setVisibility(View.VISIBLE);
 		
-		if(m_lvSongList == null)
+
+		if(StaticResources.m_albumSongListView == null)
 		{
 			m_lvSongList = new SongListView(this);
+			m_lvSongList.setButtonStyle(ButtonStyle.BUTTON_REMOVE);
 			m_rlContent.addView(m_lvSongList, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			m_lvSongList.setVisibility(View.INVISIBLE);
+			
 		}
+		else
+		{
+			m_lvSongList = StaticResources.m_albumSongListView;
+			m_rlContent.addView(m_lvSongList, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+			
+			m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+			m_lvSongList.setVisibility(View.VISIBLE);
+		}
+		
+		
     }
 	
 	
@@ -105,6 +146,7 @@ public class AlbumActivity extends Activity{
 					return;
 				
 				Playlist retPl = (Playlist)obj;
+				m_playlist = retPl;
 				m_lvSongList.setVisibility(View.VISIBLE);
 				m_lvSongList.showMedias(retPl.m_media, false);
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
@@ -146,8 +188,15 @@ public class AlbumActivity extends Activity{
     @Override
     protected void onDestroy()
     {
+    	if(m_lvSongList != null)
+    	{
+    		m_rlContent.removeView(m_lvSongList);
+    	}
+    	
     	super.onDestroy();
-    	releaseResource();
+    	StaticResources.m_albumSongListView = m_lvSongList;
+    	StaticResources.m_albumPlaylist = m_playlist;
+    	
     	m_bRunning = false;
     }
     
@@ -157,7 +206,7 @@ public class AlbumActivity extends Activity{
     	super.onPause();
     	if(this.m_lvSongList != null)
     	{
-    		this.m_lvSongList.pauseMedia();
+    		//this.m_lvSongList.pauseMedia();
     	}
     }
     
@@ -179,6 +228,8 @@ public class AlbumActivity extends Activity{
     		m_lvSongList.release();
     		m_lvSongList = null;
     	}
+    	
+    	m_playlist = null;
     }
     
     @Override

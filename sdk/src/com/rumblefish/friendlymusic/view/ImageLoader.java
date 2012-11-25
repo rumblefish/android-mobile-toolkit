@@ -31,7 +31,7 @@ public class ImageLoader {
 	private Bitmap _missing;
 	private boolean _busy;
 
-	public static final boolean SHOWLOG = true;
+	public static final boolean SHOWLOG = false;
 	/**
 	 * Constructor
 	 */

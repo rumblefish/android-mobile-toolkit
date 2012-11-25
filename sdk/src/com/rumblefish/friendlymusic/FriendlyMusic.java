@@ -36,8 +36,6 @@ public class FriendlyMusic extends Activity {
         
         setContentView(R.layout.friendlymusic);
         
-        //configures rumble environment
-        RFAPI.rumbleWithEnvironment(RFAPIEnv.RFAPIEnvProduction, "PUBLIC_KEY", "PASSWORD");
         LocalPlaylist.initPlaylist(this);
         LocalPlaylist.sharedPlaylist().readPlaylist();
         

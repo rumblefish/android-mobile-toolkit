@@ -117,7 +117,9 @@ public class CoverFlowActivity  extends Activity {
             	
             	m_cfCoverflow.setImageWidth(m_minRatio * 200);
         		m_cfCoverflow.setImageHeight(m_minRatio * 200);
-        		
+        		m_cfCoverflow.setReflectionGap(2);
+        		m_cfCoverflow.setImageReflectionRatio(0.3f);
+        		m_cfCoverflow.setWithReflection(true);
             	m_rlContent.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
@@ -176,7 +178,7 @@ public class CoverFlowActivity  extends Activity {
 			for(int i = 0 ; i < m_playlists.size(); i++)
 			{
 				Playlist pl = m_playlists.get(i);
-				Log.v(LOGTAG, m_playlists.get(i).m_title + " => " + pl.m_imageURL.toString());
+				//Log.v(LOGTAG, m_playlists.get(i).m_title + " => " + pl.m_imageURL.toString());
 				ImageLoader.getInstance().load(null, pl.m_imageURL.toString(), true);
 			}
 			
@@ -277,13 +279,17 @@ public class CoverFlowActivity  extends Activity {
     
     private void recycleCoverflowImages()
     {
-    	for(int i = 0; i < m_bitmaps.size(); i++)
+    	if(m_bitmaps != null)
     	{
-    		Bitmap bm = m_bitmaps.get(i);
-    		if(bm != null && bm.isMutable())
-    			bm.recycle();
+	    	for(int i = 0; i < m_bitmaps.size(); i++)
+	    	{
+	    		Bitmap bm = m_bitmaps.get(i);
+	    		if(bm != null && bm.isMutable())
+	    			bm.recycle();
+	    	}
+	    	m_bitmaps.clear();
     	}
-    	m_bitmaps.clear();
+    	
     	ImageLoader loader = ImageLoader.getInstance();
     	loader.clearCache();
     }
