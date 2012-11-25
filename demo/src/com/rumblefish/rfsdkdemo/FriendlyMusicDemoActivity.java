@@ -2,6 +2,7 @@ package com.rumblefish.rfsdkdemo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -43,13 +44,17 @@ public class FriendlyMusicDemoActivity extends Activity {
 		}
 		else
 		{
-			Intent intent = new Intent(Intent.ACTION_SEND);
-			intent.setType("text/plain");
-			intent.putExtra(Intent.EXTRA_EMAIL, "info@friendlymusic.com");
-			intent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion");
-			intent.putExtra(Intent.EXTRA_TEXT, "");
+			Intent send = new Intent(Intent.ACTION_SENDTO);
+			String uriText;
 
-			startActivity(Intent.createChooser(intent, "Send Email"));
+			uriText = "mailto:info@friendlymusic.com" + 
+			          "?subject=Suggestion" + 
+			          "&body=I have a suggestion";
+			uriText = uriText.replace(" ", "%20");
+			Uri uri = Uri.parse(uriText);
+
+			send.setData(uri);
+			startActivity(Intent.createChooser(send, "Send mail..."));
 		}
 	}
     
