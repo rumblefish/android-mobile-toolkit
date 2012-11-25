@@ -34,24 +34,23 @@ You need [Android SDK](http://developer.android.com/sdk/index.html) to be instal
 See following instructions to how to use RAT and how to build a test project in Eclipse. 
 [Here](http://developer.android.com/tools/projects/index.html) is showing how to organize project with libraries.
 
-- RAT itself is a library project.
-And also can be compiled into executable binary by changing project type in project property settings.
+- RAT itself is a library project. And also can be compiled into executable binary by changing project type in project property settings.
 
 - Create a new project which will use RAT.
 
 - Add reference to the library project
-  1. Right click on the project created in Package Explorer and Click Properties
-  2. Go to Android page.
-  3. Click Add button in library area and select RumbleFish Android Toolkit project.
-  4. Click OK to finish.
+  * Right click on the project created in Package Explorer and Click Properties
+  * Go to Android page.
+  * Click Add button in library area and select RumbleFish Android Toolkit project.
+  * Click OK to finish.
   
 - Configure AndroidManifest.xml
-  1. RAT can be run on all of devices which is running android 2.2 above. So you can set android:minSdkVersion to 8 or above.
-  2. Add internet permission as it uses internet connection for interaction with sandbox server.
+  * RAT can be run on all of devices which is running android 2.2 above. So you can set android:minSdkVersion to 8 or above.
+  * Add internet permission as it uses internet connection for interaction with sandbox server.
   
    <uses-permission android:name="android.permission.INTERNET" />
   		
-  3. Add activities
+  * Add activities
   
 	<activity android:name="com.rumblefish.friendlymusic.FriendlyMusic"
 		android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
@@ -80,11 +79,11 @@ And also can be compiled into executable binary by changing project type in proj
 	</activity>
        	
 - You have been granted access to RFAPI class which contains all of RumbleFish API functions.
-  1. To initialize connection to server, add following code
+  * To initialize connection to server, add following code
   
 	RFAPI.rumbleWithEnvironment(RFAPIEnv.RFAPIEnvProduction, "PUBLIC_KEY", "PASSWORD");
   		
-  2. FriendlyMusic is the main Activity for RAT and you can simply send intent to show the activity. Please note that opening main activity after the RFAPI is initialized, you can check this by calling
+  * FriendlyMusic is the main Activity for RAT and you can simply send intent to show the activity. Please note that opening main activity after the RFAPI is initialized, you can check this by calling
     
 	RFAPI.getSingleTone().isInitialized();
 
