@@ -25,7 +25,7 @@ portal to enable these features.
 ## Hacking on the code 
 This repository uses git submodules to pull in its dependencies.  **Make sure to perform a recursive submodule initialization after cloning.**
 
-git clone git@github.com:rumblefish/ios-mobile-toolkit.git git submodule update --init --recursive
+git clone git@github.com:rumblefish/android-mobile-toolkit.git git submodule update --init --recursive
 
 
 The `demo/` directory contains a demo project that uses the SDK. The `sdk/` directory contains the SDK project itself. Assuming the submodules in your clone are up-to-date, you should be able to simply build and hack on either project in eclipse in the usual manner. 
