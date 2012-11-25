@@ -1657,7 +1657,7 @@ public class OccasionActivity  extends Activity {
     	super.onPause();
     	if(this.m_lvPlaylists != null)
     	{
-    		this.m_lvPlaylists.pauseMedia();
+    		//this.m_lvPlaylists.pauseMedia();
     	}
     }
     

@@ -78,6 +78,8 @@ See following instructions to how to use RAT and how to build a test project in 
 		android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
 	</activity>
        	
+- Copy assets into new projects.
+  * Copy everything from `sdk/assets` folder into new project's assets folder.
 - You have been granted access to RFAPI class which contains all of RumbleFish API functions.
   * To initialize connection to server, add following code
   

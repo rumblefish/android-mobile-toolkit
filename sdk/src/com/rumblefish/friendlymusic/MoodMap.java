@@ -573,7 +573,7 @@ public class MoodMap extends Activity implements OnTouchListener{
     	super.onPause();
     	if(m_mediaPlayer != null)
     	{
-    		m_mediaPlayer.pause();
+    		//m_mediaPlayer.pause();
     	}
     }
     

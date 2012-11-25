@@ -70,8 +70,8 @@ public class StreamingMediaPlayer {
 		Runnable r = new Runnable() {   
 	        public void run() {   
 	            try {
-	            	
-	            	while(m_bDownloading)
+	            	//let testMediaBuffer have some time to exit(); 
+	            	do
 	            	{
 	            		interrupt();
 	            		try
@@ -82,7 +82,7 @@ public class StreamingMediaPlayer {
 	            		{
 	            			
 	            		}
-	            	}
+	            	} while(m_bDownloading);
 	            	
 	            	isInterrupted = false;
 	            	
@@ -103,9 +103,8 @@ public class StreamingMediaPlayer {
     @SuppressWarnings("unused")
 	public void downloadAudioIncrement(String mediaUrl) throws IOException {
     	
-    	m_bDownloading = true;
-    	
     	m_mpBufferingUpdateListener.onBufferingUpdate(null, 0);
+    	m_bDownloading = true;
     	
     	InputStream stream = null;
     	try
@@ -116,6 +115,7 @@ public class StreamingMediaPlayer {
 	        if (stream == null) {
 	        	Log.e(getClass().getName(), "Unable to create InputStream for mediaUrl:" + mediaUrl);
 	        	m_bDownloading  = false;
+	        	return;
 	        }
     	}
     	catch(Exception e)
@@ -124,6 +124,10 @@ public class StreamingMediaPlayer {
     		return;
     	}
         
+    	if(!validateNotInterrupted())
+    		return;
+    	
+    	
 		downloadingMediaFile = new File(context.getCacheDir(),"downloadingMedia.dat");
 		
 		// Just in case a prior deletion failed because our code crashed or something, we also delete any previously 
@@ -147,7 +151,7 @@ public class StreamingMediaPlayer {
             incrementalBytesRead += numread;
             totalKbRead = totalBytesRead/1000;
             testMediaBuffer();
-            //Log.v(getClass().getName(), "Downloaded " + totalKbRead + "kB");
+//            Log.v(getClass().getName(), "Downloaded " + totalKbRead + "kB");
         } while (validateNotInterrupted());   
        		stream.close();
         if (validateNotInterrupted()) {

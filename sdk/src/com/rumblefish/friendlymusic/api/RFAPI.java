@@ -303,10 +303,13 @@ public class RFAPI {
 	
 	public static void rumbleWithEnvironment(RFAPIEnv env, String publicKey, String password)
 	{
-		Log.v(LOGTAG,"rumbleWithEnvironment, RFAPI initialization started!");
 		
-		Producer producer = RFAPI.apiWithEnvironment(env, RFAPIVersion.RFAPIVersion2, publicKey, password);
-		producer.run();
+		if(RFAPI.getSingleTone().isInitialized() == false)
+		{
+			Log.v(LOGTAG,"rumbleWithEnvironment, RFAPI initialization started!");
+			Producer producer = RFAPI.apiWithEnvironment(env, RFAPIVersion.RFAPIVersion2, publicKey, password);
+			producer.run();
+		}
 	}
 	
 	
