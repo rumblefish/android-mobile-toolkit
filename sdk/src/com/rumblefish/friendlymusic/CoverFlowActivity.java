@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver;
@@ -115,17 +116,51 @@ public class CoverFlowActivity  extends Activity {
             	
             	m_minRatio = Math.min(m_ratioTo320X, m_ratioTo480Y);
             	
-            	m_cfCoverflow.setImageWidth(m_minRatio * 200);
-        		m_cfCoverflow.setImageHeight(m_minRatio * 200);
+            	int display_mode = getResources().getConfiguration().orientation;
+
+            	if (display_mode == 1) {
+            	    
+            	} else {
+            	    //setContentView(R.layout.main_land);
+            		m_ratioTo480Y  = (float)m_contentWidth / 416.0f * 0.8f ;
+            		m_minRatio = Math.min((float) m_contentHeight / 320.0f, (float)m_contentWidth / 416.0f);
+            	}
+            	
+            	m_cfCoverflow.setImageWidth(m_minRatio * 150);
+        		m_cfCoverflow.setImageHeight(m_minRatio * 150);
         		m_cfCoverflow.setReflectionGap(2);
         		m_cfCoverflow.setImageReflectionRatio(0.3f);
         		m_cfCoverflow.setWithReflection(true);
             	m_rlContent.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            	
+            	if(StaticResources.m_cfBitmaps != null)
+            	{
+            		m_bitmaps = StaticResources.m_cfBitmaps;
+            		
+            		if(m_bitmaps.size() > 0)
+            		{
+            			//cover flow update
+            			setupCoverFlow(m_bitmaps);
+            			//text update
+            			m_cfCoverflow.setSelection(m_playlists.size() / 2 , true);
+            		}
+            	}
             }
         });
 		
-		
-		getPlaylistFromServer();
+		if(StaticResources.m_cfPlaylists != null)
+		{
+			this.m_playlists = StaticResources.m_cfPlaylists;
+			if(StaticResources.m_cfBitmaps == null)
+			{
+				downloadPlaylistImages();
+			}
+		}
+		else
+		{
+			StaticResources.m_cfBitmaps = null;
+			getPlaylistFromServer();
+		}
     }
 	
 	//cover flow
@@ -174,6 +209,9 @@ public class CoverFlowActivity  extends Activity {
 		}
 		else
 		{
+			//if(m_downloadWatcher.isAlive())
+			m_bRunning = true;
+			m_downloadWatcher.start();
 			
 			for(int i = 0 ; i < m_playlists.size(); i++)
 			{
@@ -182,9 +220,7 @@ public class CoverFlowActivity  extends Activity {
 				ImageLoader.getInstance().load(null, pl.m_imageURL.toString(), true);
 			}
 			
-			//if(m_downloadWatcher.isAlive())
-			m_bRunning = true;
-			m_downloadWatcher.start();
+			
 		}
 	}
 	
@@ -263,6 +299,7 @@ public class CoverFlowActivity  extends Activity {
 		public void onClick(View v) {
 			if(v == m_ivBtnNavDone)
 			{
+				releaseResource();
 				finish();
 			}
 			else if (v == m_ivBtnNavPlaylist)
@@ -304,6 +341,7 @@ public class CoverFlowActivity  extends Activity {
 			{
 				try {
 					Thread.sleep((long) (200));
+					Log.v(LOGTAG, "Sleeped 200ms waiting another");
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}				
@@ -328,7 +366,28 @@ public class CoverFlowActivity  extends Activity {
     {
     	m_bRunning = false;
     	super.onDestroy();	
-    	recycleCoverflowImages();
+    	
+    	StaticResources.m_cfPlaylists = this.m_playlists;
+    	StaticResources.m_cfBitmaps = this.m_bitmaps;
     }
+    
+    private void releaseResource()
+    {
+    	recycleCoverflowImages();
+    	this.m_bitmaps = null;
+    	this.m_playlists = null;
+    }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	        // do something on back.
+	    	releaseResource();
+	    	finish();
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}
     
 }

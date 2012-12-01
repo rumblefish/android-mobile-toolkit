@@ -16,7 +16,6 @@ import com.rumblefish.friendlymusic.api.Playlist;
 import com.rumblefish.friendlymusic.api.Producer;
 import com.rumblefish.friendlymusic.api.ProducerDelegate;
 import com.rumblefish.friendlymusic.api.RFAPI;
-import com.rumblefish.friendlymusic.api.StaticResources;
 import com.rumblefish.friendlymusic.view.SongListView;
 import com.rumblefish.friendlymusic.view.SongListView.ButtonStyle;
 

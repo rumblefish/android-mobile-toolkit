@@ -20,7 +20,7 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter> -->
+            </intent-filter>  -->
         </activity>
         
         <activity android:name="MoodMap"
@@ -32,7 +32,7 @@
         </activity>
         
         <activity android:name="CoverFlowActivity"
-            android:screenOrientation="landscape"
+            
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
         

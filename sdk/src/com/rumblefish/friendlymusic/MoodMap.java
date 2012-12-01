@@ -54,7 +54,6 @@ import com.rumblefish.friendlymusic.api.Playlist;
 import com.rumblefish.friendlymusic.api.Producer;
 import com.rumblefish.friendlymusic.api.ProducerDelegate;
 import com.rumblefish.friendlymusic.api.RFAPI;
-import com.rumblefish.friendlymusic.api.StaticResources;
 import com.rumblefish.friendlymusic.mediaplayer.StreamingMediaPlayer;
 
 public class MoodMap extends Activity implements OnTouchListener{

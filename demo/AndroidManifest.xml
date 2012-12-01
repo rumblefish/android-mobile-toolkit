@@ -35,7 +35,6 @@
         </activity>
         
         <activity android:name="com.rumblefish.friendlymusic.CoverFlowActivity"
-            android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
         

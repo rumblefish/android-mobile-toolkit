@@ -18,6 +18,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver;
@@ -96,13 +97,13 @@ public class OccasionActivity  extends Activity {
 	
 	
 	//occasions
-	ArrayList<Integer> 						m_occasionKeys;
-	HashMap<Integer, ArrayList<Bitmap>> 	m_occasionImageDict;
-	ArrayList<Occasion>						m_occasions;
-	ArrayList<Occasion>						m_occasionStack;
+	ArrayList<Integer> 						m_occasionKeys = null;
+	HashMap<Integer, ArrayList<Bitmap>> 	m_occasionImageDict = null;
+	ArrayList<Occasion>						m_occasions = null;
+	ArrayList<Occasion>						m_occasionStack = null;
 	
-	Occasion				m_displayedOccasion;
-	ArrayList<Playlist>		m_displayedPlaylists;
+	Occasion				m_displayedOccasion = null;
+	ArrayList<Playlist>		m_displayedPlaylists = null;
 	
 	
 	// colors;
@@ -119,8 +120,11 @@ public class OccasionActivity  extends Activity {
 	// utils variables
 	boolean m_replaySong;
 	int 	m_level;
-	int	m_plRow;
-	int m_plSection;
+	int		m_plRow;
+	int 	m_plSection;
+	
+	Occasion m_thirdOccasion = null;
+	int		m_loadingPhase = -1;
 	
 	boolean m_bAnimating = false;
 	
@@ -137,10 +141,6 @@ public class OccasionActivity  extends Activity {
         
         setContentView(R.layout.occasion);
         
-        initView();
-        
-        m_occasionStack = new ArrayList<Occasion>();
-        
         m_level = 1;
         
         m_secondButtons = new ArrayList<TextView>();
@@ -154,18 +154,154 @@ public class OccasionActivity  extends Activity {
         m_occasionKeys.add(RFOccasionSports);
         m_occasionKeys.add(RFOccasionHoliday);
         
-        m_occasionImageDict = new HashMap<Integer, ArrayList<Bitmap>>();
-        
-        for( int i = 0 ; i < m_occasionKeys.size(); i++)
+        // when a bundle is saved and if the occasions are loaded once,
+        // restore from the bundle and resumes the states.
+        if(StaticResources.m_occasionBundle != null && 
+        		StaticResources.m_occasionBundle._loadingPhase != 1 &&
+        		StaticResources.m_occasionBundle._occasions != null)
         {
-        	ArrayList<Bitmap> occasionArray = new ArrayList<Bitmap>();
-        	m_occasionImageDict.put(m_occasionKeys.get(i), occasionArray);
+        	m_occasions = StaticResources.m_occasionBundle._occasions;
+        	m_occasionStack = StaticResources.m_occasionBundle._occasionStack;
+        	m_occasionImageDict = StaticResources.m_occasionBundle._occasionImageDict;
+        	
+        	m_level = StaticResources.m_occasionBundle._level;
+        	m_displayedOccasion = StaticResources.m_occasionBundle._displayedOccasion;
+        	m_displayedPlaylists = StaticResources.m_occasionBundle._displayedPlaylists;
+        	m_loadingPhase = StaticResources.m_occasionBundle._loadingPhase;
+        	m_thirdOccasion = StaticResources.m_occasionBundle._thirdOccasion;
+        	
+        	//processes loading phases and SongListView later;
+        	initView();
+        	
+        	m_bRunning = true;
+    		
+    		updateOccasionImage(true);
+    		m_rotateImagesTimer.start();
+        }
+        else
+        {
+        	StaticResources.m_occasionBundle = null;
+        	
+	        m_occasionStack = new ArrayList<Occasion>();
+	        m_occasionImageDict = new HashMap<Integer, ArrayList<Bitmap>>();
+	        
+	        for( int i = 0 ; i < m_occasionKeys.size(); i++)
+	        {
+	        	ArrayList<Bitmap> occasionArray = new ArrayList<Bitmap>();
+	        	m_occasionImageDict.put(m_occasionKeys.get(i), occasionArray);
+	        }
+	        
+	        initView();
+	        
+	        loadOccasionImages();
+	        getOccasionsFromServer();
         }
         
-        loadOccasionImages();
-        getOccasionsFromServer();
+        
 	}
 	
+	private void restoreStateFromBundle()
+	{
+		if(StaticResources.m_occasionBundle == null)
+			return;
+		
+		m_saveBundle = StaticResources.m_occasionBundle;
+		if(m_saveBundle._level == 1)
+		{
+			positionFirstButtons(false);
+		}
+		else
+		{
+			positionFirstButtons(true);
+			m_svScroller.setVisibility(View.VISIBLE);
+			m_firstButton.setVisibility(View.VISIBLE);
+			
+			@SuppressWarnings("unchecked")
+			ArrayList<Occasion> m_stackclone = (ArrayList<Occasion>)m_occasionStack.clone();
+			
+			if(m_saveBundle._level >= 2)
+			{
+				m_level = 1;
+				
+				String name = m_stackclone.get(0).m_name;
+				if(name.equals("Moods"))
+				{
+					this.loadSecondLevel(m_ivBtnMood);
+				}
+				else if(name.equals("Celebrations"))
+				{
+					this.loadSecondLevel(m_ivBtnCelebration);
+				}
+				else if(name.equals("Themes"))
+				{
+					this.loadSecondLevel(m_ivBtnTheme);
+				}
+				else if(name.equals("Current Events"))
+				{
+					this.loadSecondLevel(m_ivBtnEvent);
+				}
+				else if(name.equals("Sports"))
+				{
+					this.loadSecondLevel(m_ivBtnSports);
+				}
+				else if(name.equals("Holidays"))
+				{
+					this.loadSecondLevel(m_ivBtnHoliday);
+				}
+				
+				m_level = m_saveBundle._level;
+				if(m_saveBundle._level == 2)
+				{
+					this.positionSecondButtons(false, null);
+				}
+
+			}
+			if(m_saveBundle._level >= 3)
+			{
+				Occasion secondoccasion = m_stackclone.get(1);
+				Occasion firstoccasion = m_stackclone.get(0);
+				
+				//shows second level's active button
+				int activeSecondButtonIdx = firstoccasion.m_children.indexOf(secondoccasion);
+				TextView activeSecondButton = this.m_secondButtons.get(activeSecondButtonIdx);
+				activeSecondButton.setTextSize(32.0f * m_textRatio);
+				activeSecondButton.setVisibility(View.VISIBLE);
+				setElemPosSize(activeSecondButton, 	(int)(  0 * m_ratioTo320X), (int)(0 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
+				m_secondRect = getElemPosSize(activeSecondButton);
+				
+				this.pushOccasion(secondoccasion);
+				if(m_saveBundle._level == 3)
+				{
+					this.positionThirdButtons(false, null);
+				}
+			}
+			if(m_saveBundle._level >= 4)
+			{
+				Occasion thirdoccasion = m_thirdOccasion;
+				Occasion secondoccasion = m_stackclone.get(1);
+				
+				//shows second level's active button
+				int activeThirdButtonIdx = secondoccasion.m_children.indexOf(thirdoccasion);
+				TextView activeThirdButton = this.m_thirdButtons.get(activeThirdButtonIdx);
+				activeThirdButton.setTextSize(32.0f * m_textRatio);
+				activeThirdButton.setVisibility(View.VISIBLE);
+				setElemPosSize(activeThirdButton, 	(int)(  0 * m_ratioTo320X), (int)(35 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
+				m_thirdRect = getElemPosSize(activeThirdButton);
+				
+				scrollerContentResize((BUTTON_HEIGHT_FIXED * 2) * m_ratioTo480Y);
+				
+				if(m_loadingPhase == 2)
+				{
+					fetchPlaylistsForOccasion(this.m_thirdOccasion);
+				}
+				else
+				{
+					m_lvPlaylists.setVisibility(View.VISIBLE);
+				}
+			}
+			
+		}
+	}
 	
 	
 	// occasion image utils function start
@@ -297,6 +433,8 @@ public class OccasionActivity  extends Activity {
 				
 				m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 				setButtonsHidden(false);
+				
+				m_loadingPhase = -1;
 			}
 
 			@Override
@@ -307,6 +445,7 @@ public class OccasionActivity  extends Activity {
 			}
     	};
     	getOccasion.run();
+    	m_loadingPhase = 1;
 		
 	}
 	
@@ -405,8 +544,6 @@ public class OccasionActivity  extends Activity {
 		}
 	}
 	
-	
-	
 	//Levels
 	public void loadSecondLevel(View button)
 	{
@@ -476,9 +613,6 @@ public class OccasionActivity  extends Activity {
 			
 			m_firstButton.setBackgroundColor(m_firstLevelColor);
 			m_firstButton.setTextColor(Color.WHITE);
-
-			showSecondLevel();
-			
 		}
 	}
 	
@@ -515,7 +649,14 @@ public class OccasionActivity  extends Activity {
 				break;
 			}
 		}
+		
+		while(m_occasionStack.size() > 0)
+		{
+			m_occasionStack.remove(m_occasionStack.size() - 1);
+		}
+
 		m_occasionStack.add(occasion);
+		
 		for(int i = 0; i < occasion.m_children.size(); i++)
 		{
 			Occasion child = occasion.m_children.get(i);
@@ -536,11 +677,16 @@ public class OccasionActivity  extends Activity {
 		positionSecondButtons(true, null);
 		
 		scrollerContentResize((BUTTON_SECOND_HEIGHT * occasion.m_children.size() * m_ratioTo480Y));
-		
 	}
 	
 	private void pushOccasion(Occasion occasion)
 	{
+		while(m_occasionStack.size() > 1)
+		{
+			m_occasionStack.remove(m_occasionStack.size() - 1);
+		}
+		
+		
 		m_occasionStack.add(occasion);
 		for( int i = 0; i < occasion.m_children.size(); i++)
 		{
@@ -557,14 +703,11 @@ public class OccasionActivity  extends Activity {
 			button.setClickable(true);
 			button.setOnClickListener(m_OnThirdButtonClickListener);
 
-			
 			m_thirdButtons.add(button);
 			
 		}
 		
-		
 		positionThirdButtons(true, null);
-		
 		scrollerContentResize((BUTTON_THIRD_HEIGHT * occasion.m_children.size() + BUTTON_HEIGHT_FIXED) * m_ratioTo480Y);
 	}
 	
@@ -626,11 +769,11 @@ public class OccasionActivity  extends Activity {
 	
 	public float homeButtonPos[][] = new float[][]{
 			{29,  013, -117, -115},
-			{175, 013,  320, -115},
-			{29,  151, -117,  151},
-			{175, 151,  320,  151},
-			{29,  289, -117,  416},
-			{175, 289,  320,  416},
+			{165, 013,  320, -115},
+			{29,  146, -117,  146},
+			{165, 146,  320,  146},
+			{29,  280, -117,  416},
+			{165, 280,  320,  416},
 	};
 	
 	public void positionFirstButtons(boolean hidden)
@@ -1155,6 +1298,8 @@ public class OccasionActivity  extends Activity {
 					
 					updateSongsListView();
 					m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+
+					m_loadingPhase = -1;
 				}
 			}
 
@@ -1164,12 +1309,13 @@ public class OccasionActivity  extends Activity {
 				{
 					m_displayedPlaylists.clear();
 					m_pbActivityIndicator.setVisibility(View.INVISIBLE);
+
+					m_loadingPhase = -1;
 				}
 			}
     	};
     	getPlaylist.run();
-    	
-		
+
 	}
 	private void fetchPlaylistsForOccasion(Occasion occasion)
 	{
@@ -1203,10 +1349,17 @@ public class OccasionActivity  extends Activity {
 			@Override
 			public void onError() {
 				if(m_bRunning)
+				{
 					m_pbActivityIndicator.setVisibility(View.GONE);
+					
+					m_loadingPhase = -1;
+				}
 			}
     	};
     	getOccasion.run(); 
+    	
+    	m_loadingPhase = 2;
+    	m_thirdOccasion = occasion;
 	}
 	
 	private void loadPlaylist(View button)
@@ -1457,11 +1610,22 @@ public class OccasionActivity  extends Activity {
 			m_rlScrollContent = new RelativeLayout(this);
 			m_svScroller.addView(m_rlScrollContent);
 		}
-		if(m_lvPlaylists == null)
+		
+		if(StaticResources.m_occasionBundle != null && 
+		   StaticResources.m_occasionBundle._lvPlaylists != null)
 		{
-			m_lvPlaylists = new SongListView(this);
+			m_lvPlaylists = StaticResources.m_occasionBundle._lvPlaylists;
 			m_rlContent.addView(m_lvPlaylists);
 			m_lvPlaylists.setVisibility(View.INVISIBLE);
+		}
+		else
+		{
+			if(m_lvPlaylists == null)
+			{
+				m_lvPlaylists = new SongListView(this);
+				m_rlContent.addView(m_lvPlaylists);
+				m_lvPlaylists.setVisibility(View.INVISIBLE);
+			}
 		}
 		
 		final ViewTreeObserver vto = m_rlContent.getViewTreeObserver();
@@ -1501,48 +1665,37 @@ public class OccasionActivity  extends Activity {
             	
             	
             	
-            	// home buttons.
-            	positionFirstButtons(false);
             	
             	// first button
             	setElemPosSize(m_firstButton, 		(int)(  0 * m_ratioTo320X), 	(int)(  0 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
             	m_firstButton.setTextSize(32 * m_textRatio);
-            	
             	// scroller position
             	setElemPosSize(m_svScroller, 		(int)(  0 * m_ratioTo320X), 	(int)(  35 * m_ratioTo480Y),  m_contentWidth, m_contentHeight - (int)(35 * m_ratioTo480Y) );
-            	
             	// songlistview
             	setElemPosSize(m_lvPlaylists, 		(int)(  0 * m_ratioTo320X), 	(int)(  70 * m_ratioTo480Y),  m_contentWidth, m_contentHeight - (int)(70 * m_ratioTo480Y) );
             	
             	
-            	setButtonsHidden(true);
-
+            	if(StaticResources.m_occasionBundle == null)
+            	{
+            		// home buttons.
+            		positionFirstButtons(false);
+            		setButtonsHidden(true);
+            	}
+            	else
+            	{
+            		restoreStateFromBundle();
+            	}
 //            	m_pbActivityIndicator.bringToFront();
             	
             	m_rlContent.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
-        
-        
     }
 	
 	
 	
 	private void setButtonsHidden(boolean hidden)
 	{
-//		float alpha = 0;
-//		if(hidden == false)
-//			alpha = 1;
-//		else if(hidden == true)
-//			alpha = 0;
-		
-		
-//		m_ivBtnMood.setAlpha(alpha);
-//		m_ivBtnCelebration.setAlpha(alpha);
-//		m_ivBtnTheme.setAlpha(alpha);
-//		m_ivBtnEvent.setAlpha(alpha);
-//		m_ivBtnSports.setAlpha(alpha);
-//		m_ivBtnHoliday.setAlpha(alpha);
 		
 		int idx;
 		if(hidden == false)
@@ -1593,6 +1746,7 @@ public class OccasionActivity  extends Activity {
 			{
 				if(v == m_ivBtnNavDone)
 				{
+					releaseResource();
 					finish();
 				}
 				else if (v == m_ivBtnNavPlaylist)
@@ -1625,6 +1779,7 @@ public class OccasionActivity  extends Activity {
 				else
 				{
 					loadSecondLevel(v);
+					showSecondLevel();
 				}
 			}
 		}
@@ -1675,15 +1830,65 @@ public class OccasionActivity  extends Activity {
     @Override
     protected void onDestroy()
     {
+    	
+    	m_bRunning = false;
+    	
+    	if(m_saveBundle != null)
+    	{
+    		m_saveBundle._loadingPhase = m_loadingPhase;
+    		
+    		m_rlContent.removeView(m_lvPlaylists);
+    		
+    		m_saveBundle._lvPlaylists = m_lvPlaylists;
+    		m_saveBundle._level = m_level;
+    		m_saveBundle._occasionImageDict = m_occasionImageDict;
+    		m_saveBundle._displayedPlaylists = m_displayedPlaylists;
+    		m_saveBundle._thirdOccasion = m_thirdOccasion;
+    		
+    		m_saveBundle._occasions = m_occasions;
+    		m_saveBundle._occasionStack = m_occasionStack;
+    	}
+    	StaticResources.m_occasionBundle = m_saveBundle;
+    	
     	super.onDestroy();
+    }
+    
+    private OccassionActivitySaveBundle m_saveBundle = new OccassionActivitySaveBundle();
+    
+    private void releaseResource()
+    {
     	if(m_lvPlaylists != null)
     	{
     		m_lvPlaylists.release();
     	}
     	recycleOccasionImages();
     	
-    	m_bRunning = false;
-    	
+    	m_saveBundle = null;
+    }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+	    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+	        // do something on back.
+	    	releaseResource();
+	    	finish();
+	        return true;
+	    }
+
+	    return super.onKeyDown(keyCode, event);
+	}
+	
+    public class OccassionActivitySaveBundle
+    {
+    	public int _loadingPhase = -1;
+    	public SongListView _lvPlaylists = null;
+    	public int _level = 0;
+    	public HashMap<Integer, ArrayList<Bitmap>> _occasionImageDict = null;
+    	public ArrayList<Occasion> _occasions;
+    	public ArrayList<Occasion> _occasionStack;
+    	Occasion				_displayedOccasion;
+    	ArrayList<Playlist>		_displayedPlaylists;
+    	Occasion				_thirdOccasion;
     }
     
     //enum

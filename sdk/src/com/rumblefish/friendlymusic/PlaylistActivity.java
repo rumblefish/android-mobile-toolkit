@@ -13,7 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.rumblefish.friendlymusic.api.LocalPlaylist;
-import com.rumblefish.friendlymusic.api.StaticResources;
 import com.rumblefish.friendlymusic.view.SongListView;
 import com.rumblefish.friendlymusic.view.SongListView.ButtonStyle;
 
