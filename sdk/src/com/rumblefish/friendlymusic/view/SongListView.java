@@ -133,6 +133,7 @@ public class SongListView extends ListView{
     	
     	if(m_adapter != null)
     	{
+    		stopMedia();
     		m_adapter.clear();
     		m_adapter = null;
     	}
@@ -245,6 +246,9 @@ public class SongListView extends ListView{
     protected OnBufferingUpdateListener m_mpBufferingUpdateListener = new OnBufferingUpdateListener()
     {
     	public void onBufferingUpdate(final MediaPlayer mp, final int percent) {
+    		
+    		if(m_adapter == null)
+    			return;
     		
     		View medialayout = null;
     		if(m_selectedCellID >= getFirstVisiblePosition() && 

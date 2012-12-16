@@ -229,7 +229,7 @@ public class CoverFlowActivity  extends Activity {
 		m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 		
 		m_bitmaps = new ArrayList<Bitmap>();
-		for(int i = m_playlists.size() -1 ; i >= 0; i--)
+		for(int i = m_playlists.size() - 1 ; i >= 0; i--)
 		{
 			Playlist pl = m_playlists.get(i);
 			Bitmap bm = ImageLoader.getInstance().get(pl.m_imageURL.toString());
@@ -327,8 +327,9 @@ public class CoverFlowActivity  extends Activity {
 	    	m_bitmaps.clear();
     	}
     	
-    	ImageLoader loader = ImageLoader.getInstance();
-    	loader.clearCache();
+    	// do not clear the cache
+    	//ImageLoader loader = ImageLoader.getInstance();
+    	//loader.clearCache();
     }
 
     boolean m_bRunning = false; 
@@ -352,12 +353,15 @@ public class CoverFlowActivity  extends Activity {
 				}
 			}
 			
-			CoverFlowActivity.this.runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					finishedDownloading();
-				}
-			});
+			if(m_bRunning == true)
+			{
+				CoverFlowActivity.this.runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						finishedDownloading();
+					}
+				});
+			}
 		}
 	});
 	
@@ -373,6 +377,9 @@ public class CoverFlowActivity  extends Activity {
     
     private void releaseResource()
     {
+    	
+    	m_bRunning = false;
+    	
     	recycleCoverflowImages();
     	this.m_bitmaps = null;
     	this.m_playlists = null;

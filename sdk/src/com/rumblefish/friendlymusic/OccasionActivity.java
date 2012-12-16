@@ -286,7 +286,13 @@ public class OccasionActivity  extends Activity {
 				activeThirdButton.setTextSize(32.0f * m_textRatio);
 				activeThirdButton.setVisibility(View.VISIBLE);
 				setElemPosSize(activeThirdButton, 	(int)(  0 * m_ratioTo320X), (int)(35 * m_ratioTo480Y),  m_contentWidth, (int)(35 * m_ratioTo480Y) - BUTTON_BORDER_WIDTH);
-				m_thirdRect = getElemPosSize(activeThirdButton);
+				
+				m_thirdRect = new Rect(	
+						0, 
+						(int)(BUTTON_HEIGHT_FIXED * m_ratioTo480Y + (int)( activeThirdButtonIdx * BUTTON_THIRD_HEIGHT * m_ratioTo480Y)), 
+						m_contentWidth, 
+						(int)(BUTTON_THIRD_HEIGHT * m_ratioTo480Y  - BUTTON_BORDER_WIDTH));
+				
 				
 				scrollerContentResize((BUTTON_HEIGHT_FIXED * 2) * m_ratioTo480Y);
 				
@@ -1291,6 +1297,9 @@ public class OccasionActivity  extends Activity {
 			public void onResult(Object obj) {
 				if(m_bRunning)
 				{
+					if(m_displayedPlaylists == null)
+						return;
+					
 					m_displayedPlaylists.clear();
 					
 					Playlist retPl = (Playlist)obj;
@@ -1307,6 +1316,9 @@ public class OccasionActivity  extends Activity {
 			public void onError() {
 				if(m_bRunning)
 				{
+					if(m_displayedPlaylists == null)
+						return;
+					
 					m_displayedPlaylists.clear();
 					m_pbActivityIndicator.setVisibility(View.INVISIBLE);
 
@@ -1420,6 +1432,7 @@ public class OccasionActivity  extends Activity {
 					setElemPosSize(tvButton, 0,   BUTTON_HEIGHT_FIXED * m_ratioTo480Y, 320f * m_ratioTo320X, BUTTON_HEIGHT_FIXED * m_ratioTo480Y  - BUTTON_BORDER_WIDTH);
 					
 					scrollerContentResize((BUTTON_HEIGHT_FIXED * 2) * m_ratioTo480Y);
+					m_svScroller.scrollTo(0, 0);
 					
 					m_rlContent.invalidate();
 					m_bAnimating = false;
@@ -1435,6 +1448,7 @@ public class OccasionActivity  extends Activity {
 			});
 	        
 	        m_level = 4;
+	        m_svScroller.scrollTo(0, 0);
 	        m_svScroller.setEnabled(false);
 		}
 		else
@@ -1742,7 +1756,7 @@ public class OccasionActivity  extends Activity {
 		@Override
 		public void onClick(View v) {
 			//if(m_bAnimating == false && v.getAlpha() == 1)
-			if(m_bAnimating == false)
+			if(m_bAnimating == false && v.getVisibility() == View.VISIBLE)
 			{
 				if(v == m_ivBtnNavDone)
 				{
@@ -1770,7 +1784,7 @@ public class OccasionActivity  extends Activity {
 		@Override
 		public void onClick(View v) {
 //			if(m_bAnimating == false && v.getAlpha() == 1)
-			if(m_bAnimating == false)
+			if(m_bAnimating == false && v.getVisibility() == View.VISIBLE)
 			{
 				if(v == m_firstButton)
 				{
@@ -1790,7 +1804,7 @@ public class OccasionActivity  extends Activity {
 		@Override
 		public void onClick(View v) {
 //			if(m_bAnimating == false && v.getAlpha() == 1)
-			if(m_bAnimating == false)
+			if(m_bAnimating == false && v.getVisibility() == View.VISIBLE)
 			{
 				showThirdLevel(v);
 			}
@@ -1801,8 +1815,11 @@ public class OccasionActivity  extends Activity {
     {
 		@Override
 		public void onClick(View v) {
-			Log.v(LOGTAG,"m_OnThirdButtonClickListener called");
-			loadPlaylist(v);
+			if(m_bAnimating == false && v.getVisibility() == View.VISIBLE)
+			{
+				Log.v(LOGTAG,"m_OnThirdButtonClickListener called");
+				loadPlaylist(v);
+			}
 		}
     };
 

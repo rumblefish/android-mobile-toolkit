@@ -141,7 +141,7 @@ public class AlbumActivity extends Activity{
 			@Override
 			public void onResult(Object obj) {
 				
-				if(m_bRunning == false)
+				if(m_bRunning == false || m_lvSongList == null)
 					return;
 				
 				Playlist retPl = (Playlist)obj;
@@ -222,6 +222,8 @@ public class AlbumActivity extends Activity{
     
     private void releaseResource()
     {
+    	m_bRunning = false;
+    	
     	if(m_lvSongList != null)
     	{
     		m_lvSongList.release();
