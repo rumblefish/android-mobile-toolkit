@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Rumblefish Mobile Toolkit for iOS
+ * Rumblefish Mobile Toolkit for Android
  * 
  * Copyright 2013 Rumblefish, Inc.
  * 
